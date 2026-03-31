@@ -1,4 +1,4 @@
-import type { TestResult, DomainResult } from "./types";
+import type { TestResult, DomainResult, PersonalInfo } from "./types";
 
 /**
  * Blends a hex color with white at the given opacity,
@@ -104,7 +104,40 @@ function buildDomainSection(domain: DomainResult): string {
     </table>`;
 }
 
-export function buildResultsHtml(result: TestResult): string {
+function buildPersonalInfoSection(info: PersonalInfo): string {
+  const fields = [
+    { label: "Nome", value: info.name },
+    { label: "Idade", value: info.age },
+    { label: "E-mail", value: info.email },
+    { label: "Profissão", value: info.profession },
+    { label: "Filhos", value: info.children },
+  ];
+
+  const rows = fields
+    .map(
+      (f) => `
+      <tr>
+        <td style="padding:6px 12px 6px 0;font-size:14px;font-weight:600;color:#355e81;white-space:nowrap;">${f.label}</td>
+        <td style="padding:6px 0;font-size:14px;color:#2d2d2d;">${f.value}</td>
+      </tr>`
+    )
+    .join("\n");
+
+  return `
+    <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;background:#ffffff;border:1px solid #d8cfc9;margin-bottom:32px;">
+      <tr>
+        <td style="padding:24px;">
+          <h2 style="font-size:18px;font-weight:600;color:#2d2d2d;margin:0 0 16px;text-align:center;">Dados Pessoais</h2>
+          <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;">
+            ${rows}
+          </table>
+        </td>
+      </tr>
+    </table>`;
+}
+
+export function buildResultsHtml(result: TestResult, personalInfo?: PersonalInfo): string {
+  const personalSection = personalInfo ? buildPersonalInfoSection(personalInfo) : "";
   const overviewTable = buildOverviewTable(result.domains);
   const domainSections = result.domains.map(buildDomainSection).join("\n");
   const formattedDate = new Date(result.completedAt).toLocaleDateString("pt-PT", {
@@ -143,6 +176,8 @@ export function buildResultsHtml(result: TestResult): string {
         <table cellpadding="0" cellspacing="0" border="0" width="640" style="border-collapse:collapse;">
           <tr>
             <td style="padding:32px 16px;">
+
+              ${personalSection}
 
               <!-- Overview -->
               <table cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;background:#ffffff;border:1px solid #d8cfc9;margin-bottom:32px;">

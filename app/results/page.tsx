@@ -6,10 +6,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { calculateResults } from "@/lib/scoring";
 import { buildResultsHtml } from "@/lib/buildResultsHtml";
-import type { Answers } from "@/lib/types";
+import type { Answers, PersonalInfo } from "@/lib/types";
 
 const STORAGE_KEY_ANSWERS = "big5-answers";
 const STORAGE_KEY_INDEX = "big5-currentIndex";
+const STORAGE_KEY_PERSONAL = "big5-personal";
 const WEBHOOK_URL = "https://automations.strutura.ai/webhook/big-5";
 
 export default function ThankYouPage() {
@@ -34,9 +35,15 @@ export default function ThankYouPage() {
         return;
       }
 
+      // Read personal info
+      const savedPersonal = localStorage.getItem(STORAGE_KEY_PERSONAL);
+      const personalInfo: PersonalInfo | undefined = savedPersonal
+        ? JSON.parse(savedPersonal)
+        : undefined;
+
       // Calculate results and send via webhook
       const result = calculateResults(answers);
-      const html = buildResultsHtml(result);
+      const html = buildResultsHtml(result, personalInfo);
 
       fetch(WEBHOOK_URL, {
         method: "POST",
@@ -52,6 +59,7 @@ export default function ThankYouPage() {
     // Clear saved progress
     localStorage.removeItem(STORAGE_KEY_ANSWERS);
     localStorage.removeItem(STORAGE_KEY_INDEX);
+    localStorage.removeItem(STORAGE_KEY_PERSONAL);
     setReady(true);
   }, [router]);
 

@@ -34,3 +34,11 @@ export interface TestResult {
 }
 
 export type Answers = Record<number, number>;
+
+export interface PersonalInfo {
+  name: string;
+  age: string;
+  email: string;
+  profession: string;
+  children: string;
+}

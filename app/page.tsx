@@ -87,7 +87,7 @@ export default function HomePage() {
         {/* CTA */}
         <div className="text-center">
           <Link
-            href="/personalidade"
+            href="/dados-pessoais"
             className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-white text-lg font-semibold rounded-2xl hover:bg-accent transition-colors shadow-lg shadow-primary/25"
           >
             Iniciar Teste
