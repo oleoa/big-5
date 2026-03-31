@@ -4,9 +4,50 @@
 
 A web application that administers the IPIP-NEO-120 personality questionnaire, scores it according to the official Big Five model (5 domains × 6 facets × 4 items = 120 items), and presents results with visual charts.
 
+**Brand:** Valquiria Abreu
 **Stack:** Next.js (App Router) + Tailwind CSS (via Windsurf/wind)
 **Language:** TypeScript
 **Data:** All 120 items are in `/data/ipip-neo-120-items.json`
+
+---
+
+## Branding — Valquiria Abreu
+
+All UI work MUST follow the Valquiria Abreu brand identity. The full branding guide is at `/data/branding.pdf`.
+
+### Brand Color Palette
+
+CSS variables are defined in `app/globals.css` and exposed via Tailwind's `@theme inline`. Always use the semantic Tailwind classes, never hardcoded gray/blue Tailwind utilities.
+
+| Token            | Tailwind Class   | Hex       | Usage                                              |
+| ---------------- | ---------------- | --------- | -------------------------------------------------- |
+| `--primary`      | `bg-primary`     | `#355e81` | Buttons, links, progress bars, selected states      |
+| `--primary-light`| `bg-primary-light`| `#a8b9c8`| Secondary backgrounds, subtle highlights            |
+| `--accent`       | `bg-accent`      | `#aa4837` | Hover states on CTAs, emphasis, terracota warmth    |
+| `--background`   | `bg-background`  | `#f2eeeb` | Page background (off-white)                         |
+| `--surface`      | `bg-surface`     | `#ffffff` | Cards, panels, elevated containers                  |
+| `--border`       | `border-border`  | `#d8cfc9` | Borders, dividers, separators (taupe/bege)          |
+| `--foreground`   | `text-foreground` | `#2d2d2d`| Body text (use opacity variants: `/60`, `/50`, `/40`) |
+
+### Logo Assets (in `/public/`)
+
+| File                  | Description                          | Where to use                          |
+| --------------------- | ------------------------------------ | ------------------------------------- |
+| `logo.png`            | Main mark (symbol + name, vertical)  | Landing page hero                     |
+| `logo-horizontal.png` | Secondary mark (symbol + name, inline)| Site headers, test/results pages      |
+| `icon.png`            | Symbol only (circular swirl)         | Favicon, small brand marks            |
+
+Source files are in `/data/logos/`.
+
+### Design Principles
+
+- **No emojis** — use colored dots or the domain colors for visual indicators
+- **No raw Tailwind grays/blues** — always use the brand CSS variables (`bg-background` not `bg-gray-50`, `border-border` not `border-gray-200`, `bg-primary` not `bg-blue-500`)
+- **Backgrounds:** page = `bg-background` (off-white), cards = `bg-surface` (white)
+- **Buttons:** primary = `bg-primary` with `hover:bg-accent`, secondary = text with `hover:bg-surface`
+- **Text opacity:** use `text-foreground/60` for secondary text, `text-foreground/40` for muted text — not `text-gray-500`
+- **Typography:** clean, contemporary, light — the brand conveys leveza (lightness) and sofisticação acessível (accessible sophistication)
+- **Animations:** keep existing slide-in and fade-in animations for smooth transitions
 
 ---
 
@@ -76,20 +117,28 @@ interface Item {
 
 ```
 /app
-  /page.tsx                    → Landing / start page
-  /test/page.tsx               → Questionnaire (120 questions)
+  /page.tsx                    → Landing / start page (logo hero + domain cards)
+  /test/page.tsx               → Questionnaire (120 questions, one per page)
   /results/page.tsx            → Results dashboard with charts
+  /globals.css                 → Brand CSS variables + animations
+  /layout.tsx                  → Root layout (fonts, metadata, favicon)
 /components
-  /QuestionCard.tsx            → Single question with 5 radio buttons
+  /QuestionCard.tsx            → Single question with 5 Likert-scale buttons
   /ProgressBar.tsx             → Shows progress (e.g. 34/120)
-  /DomainChart.tsx             → Radar or bar chart for 5 domains
-  /FacetBreakdown.tsx          → Detailed facet scores per domain
+  /RadarChart.tsx              → SVG radar/spider chart for 5 domains
+  /FacetBreakdown.tsx          → Expandable accordion with facet bar charts
 /data
   /ipip-neo-120-items.json     → The 120 items
+  /branding.pdf                → Full brand identity guide
+  /logos/                      → Original logo source files
 /lib
   /scoring.ts                  → Scoring logic (reverse, facet sums, domain sums, percentiles)
   /types.ts                    → TypeScript interfaces
-  /descriptions.ts             → Text descriptions for each domain and facet at low/average/high
+  /descriptions.ts             → Domain info (colors, icons, descriptions) + facet translations
+/public
+  /logo.png                    → Main brand mark (vertical)
+  /logo-horizontal.png         → Secondary brand mark (horizontal)
+  /icon.png                    → Brand symbol only
 ```
 
 ---
@@ -108,12 +157,13 @@ interface Item {
 
 - All 120 items MUST be answered before scoring (or handle missing with proration)
 - The `reverse` field in the JSON determines scoring direction — do NOT hardcode reverse item IDs
-- Domain colors (suggestion):
+- Domain colors (defined in `lib/descriptions.ts`, used for data visualization — these are distinct from the brand palette):
   - N (Neuroticism): `#E74C3C` (red)
   - E (Extraversion): `#F39C12` (amber)
   - O (Openness): `#9B59B6` (purple)
   - A (Agreeableness): `#2ECC71` (green)
   - C (Conscientiousness): `#3498DB` (blue)
+- All UI chrome (buttons, backgrounds, borders) must use the brand palette, NOT the domain colors. Domain colors are only for chart data points, facet bars, and domain labels.
 - The test is public domain (IPIP) — no license restrictions on the items
 - Reference: Johnson, J. A. (2014). _Journal of Research in Personality, 51_, 78–89.
 

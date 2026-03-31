@@ -1,65 +1,116 @@
 import Image from "next/image";
+import Link from "next/link";
+import DevRandomButton from "@/components/DevRandomButton";
 
-export default function Home() {
+const DOMAINS = [
+  {
+    code: "O",
+    name: "Abertura à Experiência",
+    description: "Curiosidade, criatividade e abertura a novas ideias",
+    color: "#9B59B6",
+  },
+  {
+    code: "C",
+    name: "Conscienciosidade",
+    description: "Organização, disciplina e orientação para objetivos",
+    color: "#3498DB",
+  },
+  {
+    code: "E",
+    name: "Extroversão",
+    description: "Sociabilidade, energia e expressividade",
+    color: "#F39C12",
+  },
+  {
+    code: "A",
+    name: "Amabilidade",
+    description: "Cooperação, empatia e confiança nos outros",
+    color: "#2ECC71",
+  },
+  {
+    code: "N",
+    name: "Neuroticismo",
+    description: "Sensibilidade emocional e reatividade ao stress",
+    color: "#E74C3C",
+  },
+];
+
+export default function HomePage() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <main className="min-h-screen flex items-center justify-center bg-background">
+      <div className="flex flex-col items-center px-4 py-16 sm:py-24 w-full">
+        <div className="text-center max-w-2xl mx-auto mb-12">
+          <Image
+            src="/logo.png"
+            alt="Valquiria Abreu"
+            width={180}
+            height={180}
+            className="mx-auto mb-8"
+            priority
+          />
+          <h1 className="text-4xl sm:text-5xl font-bold text-foreground mb-4 tracking-tight">
+            Descubra a Sua Personalidade
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="text-lg sm:text-xl text-foreground/60 leading-relaxed">
+            Um teste científico baseado no modelo{" "}
+            <span className="font-semibold text-primary">Big Five</span>, o
+            mais validado pela investigação em psicologia da personalidade.
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        {/* Domain Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 max-w-5xl mx-auto mb-12 w-full px-4">
+          {DOMAINS.map((domain) => (
+            <div
+              key={domain.code}
+              className="flex items-start gap-3 p-4 rounded-xl bg-surface border border-border shadow-sm"
+            >
+              <div
+                className="w-2.5 h-2.5 rounded-full shrink-0 mt-1"
+                style={{ backgroundColor: domain.color }}
+              />
+              <div>
+                <h3
+                  className="font-semibold text-sm"
+                  style={{ color: domain.color }}
+                >
+                  {domain.name}
+                </h3>
+                <p className="text-xs text-foreground/50 mt-0.5 leading-relaxed">
+                  {domain.description}
+                </p>
+              </div>
+            </div>
+          ))}
         </div>
-      </main>
-    </div>
+
+        {/* CTA */}
+        <div className="text-center">
+          <Link
+            href="/personalidade"
+            className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-white text-lg font-semibold rounded-2xl hover:bg-accent transition-colors shadow-lg shadow-primary/25"
+          >
+            Iniciar Teste
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+          </Link>
+          <p className="text-sm text-foreground/40 mt-4">
+            120 perguntas · ~15 minutos · Gratuito
+          </p>
+          <DevRandomButton />
+        </div>
+      </div>
+    </main>
   );
 }
