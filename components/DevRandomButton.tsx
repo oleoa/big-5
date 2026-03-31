@@ -34,19 +34,21 @@ export default function DevRandomButton() {
     localStorage.removeItem(STORAGE_KEY_PERSONAL);
   };
 
+  if (process.env.NODE_ENV !== "development") return null;
+
   return (
-    <div className="flex gap-2 mt-3">
+    <div className="fixed bottom-4 right-4 flex gap-2 z-50">
       <button
         onClick={handleClick}
-        className="px-4 py-2 text-sm text-foreground/40 border border-border rounded-xl hover:bg-surface hover:text-foreground/60 transition-colors cursor-pointer"
+        className="bg-primary text-white px-3 py-2 rounded-lg text-sm shadow-lg hover:bg-accent transition-colors"
       >
-        Respostas Aleatórias (Dev)
+        Dev: Preencher Aleatório
       </button>
       <button
         onClick={handleReset}
-        className="px-4 py-2 text-sm text-foreground/40 border border-border rounded-xl hover:bg-surface hover:text-foreground/60 transition-colors cursor-pointer"
+        className="bg-surface text-foreground border border-border px-3 py-2 rounded-lg text-sm shadow-lg hover:bg-background transition-colors"
       >
-        Resetar Respostas (Dev)
+        Dev: Reset
       </button>
     </div>
   );

@@ -7,6 +7,7 @@ import Link from "next/link";
 import { calculateResults } from "@/lib/scoring";
 import { buildResultsHtml } from "@/lib/buildResultsHtml";
 import type { Answers, PersonalInfo } from "@/lib/types";
+import Loader from "@/components/Loader";
 
 const STORAGE_KEY_ANSWERS = "big5-answers";
 const STORAGE_KEY_INDEX = "big5-currentIndex";
@@ -49,6 +50,7 @@ export default function ThankYouPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          clientId: process.env.NEXT_PUBLIC_CLIENT_ID,
           nome: personalInfo?.name ?? "",
           dadosPessoais: {
             idade: personalInfo?.age ?? "",
@@ -89,14 +91,14 @@ export default function ThankYouPage() {
   if (!ready) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-foreground/40 text-lg">A carregar...</div>
+        <Loader />
       </div>
     );
   }
 
   return (
     <main className="min-h-screen bg-background flex items-center justify-center px-4">
-      <div className="bg-surface rounded-2xl border border-border p-10 sm:p-14 shadow-sm max-w-lg w-full text-center animate-fade-in">
+      <div className="bg-surface rounded-2xl border border-border p-10 sm:p-14 shadow-md max-w-lg w-full text-center animate-fade-in">
         <Image
           src="/logo-horizontal.png"
           alt="Valquiria Abreu"
@@ -115,7 +117,7 @@ export default function ThankYouPage() {
 
         <Link
           href="/"
-          className="inline-block px-8 py-3 bg-primary text-white rounded-xl font-medium hover:bg-accent transition-colors shadow-sm"
+          className="inline-block px-8 py-3 bg-primary text-white rounded-xl font-medium hover:bg-accent transition-colors shadow-md"
         >
           Voltar ao Início
         </Link>

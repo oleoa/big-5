@@ -7,6 +7,7 @@ import items from "@/data/ipip-neo-120-items.json";
 import type { Answers, Item } from "@/lib/types";
 import ProgressBar from "@/components/ProgressBar";
 import QuestionCard from "@/components/QuestionCard";
+import Loader from "@/components/Loader";
 
 const typedItems = items as Item[];
 const STORAGE_KEY_ANSWERS = "big5-answers";
@@ -74,7 +75,7 @@ export default function TestPage() {
         }, 300);
       }
     },
-    [currentIndex, router]
+    [currentIndex, router],
   );
 
   const handleBack = useCallback(() => {
@@ -88,7 +89,7 @@ export default function TestPage() {
   if (!isHydrated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-foreground/40 text-lg">A carregar...</div>
+        <Loader />
       </div>
     );
   }
@@ -99,20 +100,21 @@ export default function TestPage() {
     <main className="min-h-screen flex flex-col bg-background">
       {/* Header with progress */}
       <div className="sticky top-0 z-10 bg-surface/90 backdrop-blur-sm border-b border-border px-4 py-2">
-        <div className="flex items-center">
+        <div className="flex flex-col items-center gap-2 md:relative md:flex-row md:justify-center">
           <Image
             src="/logo-horizontal.png"
             alt="Valquiria Abreu"
             width={140}
-            height={35}
-            className="shrink-0"
+            height={120}
+            className="shrink-0 w-auto md:absolute md:left-0"
+            loading="eager"
           />
-          <div className="flex-1 flex justify-center">
-            <div className="w-full max-w-md">
-              <ProgressBar current={currentIndex + 1} total={typedItems.length} />
-            </div>
+          <div className="w-full max-w-md">
+            <ProgressBar
+              current={currentIndex + 1}
+              total={typedItems.length}
+            />
           </div>
-          <div className="w-35 shrink-0" />
         </div>
       </div>
 

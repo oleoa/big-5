@@ -50,7 +50,7 @@ export default function QuestionCard({
                 ${
                   isSelected
                     ? "border-primary bg-primary/10 text-primary shadow-md"
-                    : "border-border bg-surface text-foreground/70 hover:border-primary-light hover:bg-background"
+                    : "border-border bg-surface text-foreground/70 hover:border-primary-light hover:bg-background shadow-sm"
                 }
               `}
               aria-label={`${label} - ${value} de 5`}

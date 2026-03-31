@@ -36,13 +36,14 @@ export default function DadosPessoaisPage() {
 
   return (
     <main className="min-h-screen bg-background flex items-center justify-center px-4 py-12">
-      <div className="bg-surface rounded-2xl border border-border p-8 sm:p-12 shadow-sm max-w-lg w-full animate-fade-in">
+      <div className="bg-surface rounded-2xl border border-border p-8 sm:p-12 shadow-md max-w-lg w-full animate-fade-in">
         <Image
           src="/logo-horizontal.png"
           alt="Valquiria Abreu"
           width={160}
-          height={40}
-          className="mx-auto mb-8 h-auto"
+          height={120}
+          className="mx-auto mb-8 h-auto w-auto"
+          loading="eager"
         />
 
         <h1 className="text-2xl font-bold text-foreground text-center mb-2">
@@ -156,7 +157,7 @@ export default function DadosPessoaisPage() {
             type="submit"
             disabled={!isValid}
             className={`
-              w-full py-3.5 rounded-xl font-semibold text-white transition-colors shadow-sm mt-2
+              w-full py-3.5 rounded-xl font-semibold text-white transition-colors shadow-md mt-2
               ${
                 isValid
                   ? "bg-primary hover:bg-accent cursor-pointer"
