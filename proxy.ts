@@ -12,6 +12,14 @@ export function proxy(req: NextRequest) {
     return NextResponse.next();
   }
 
+  // Proteger rotas /admin
+  if (pathname.startsWith("/admin") && pathname !== "/admin/login") {
+    const session = req.cookies.get("admin_session");
+    if (session?.value !== process.env.ADMIN_SESSION_SECRET) {
+      return NextResponse.redirect(new URL("/admin/login", req.url));
+    }
+  }
+
   if (hostname.endsWith(`.${ROOT_DOMAIN}`)) {
     const subdomain = hostname.replace(`.${ROOT_DOMAIN}`, "");
     const url = req.nextUrl.clone();

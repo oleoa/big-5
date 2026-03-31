@@ -1,5 +1,5 @@
 import { pool } from "./client";
-import { Mentora } from "@/types/mentora";
+import { Mentora, PerguntaExtra } from "@/types/mentora";
 
 function mapRow(row: Record<string, unknown>): Mentora {
   return {
@@ -18,6 +18,7 @@ function mapRow(row: Record<string, unknown>): Mentora {
     corFundo: (row.cor_fundo as string) ?? "#ffffff",
     corTexto: (row.cor_texto as string) ?? "#111827",
     textoBotao: row.texto_botao as string,
+    perguntasExtras: (row.perguntas_extras as PerguntaExtra[]) ?? [],
     opcoesResposta: row.opcoes_resposta as [
       string,
       string,

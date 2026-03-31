@@ -1,4 +1,4 @@
-# CLAUDE.md — Big Five Estrutura AI (big5.estrutura.ai)
+# CLAUDE.md — Big Five Strutura AI (bigfive.strutura.ai)
 
 ## Visão Geral
 
@@ -10,10 +10,11 @@ Cada mentora tem a sua própria página personalizada acessível de três formas
 
 ## Stack
 
-- **Framework**: Next.js 14+ com App Router
+- **Framework**: Next.js 16+ com App Router
 - **Linguagem**: TypeScript estrito
 - **Styling**: Tailwind CSS
 - **Base de dados**: PostgreSQL (Railway ou Neon) via `pg`
+- **Proxy**: `proxy.ts` na raiz (Next.js 16 — substituiu `middleware.ts`)
 - **Automação / IA**: n8n self-hosted + OpenAI Assistants API
 - **Hosting**: Vercel
 
@@ -21,13 +22,13 @@ Cada mentora tem a sua própria página personalizada acessível de três formas
 
 ## Três formas de aceder à página de uma mentora
 
-| URL                                 | Como funciona                                                     |
-| ----------------------------------- | ----------------------------------------------------------------- |
-| `big5.estrutura.ai/valquiria-abreu` | Rota dinâmica `[slug]` — sempre disponível                        |
-| `valquiria.big5.estrutura.ai`       | Wildcard DNS → middleware resolve pelo campo `subdominio`         |
-| `bigfive.valquiriaabreu.com`        | CNAME da mentora → middleware resolve pelo campo `dominio_custom` |
+| URL                                   | Como funciona                                                |
+| ------------------------------------- | ------------------------------------------------------------ |
+| `bigfive.strutura.ai/valquiria-abreu` | Rota dinâmica `[slug]` — sempre disponível                   |
+| `valquiria.bigfive.strutura.ai`       | Wildcard DNS → proxy resolve pelo campo `subdominio`         |
+| `bigfive.valquiriaabreu.com`          | CNAME da mentora → proxy resolve pelo campo `dominio_custom` |
 
-O parâmetro de rota chama-se `slug` (não `slug`) para ficar mais legível no código.
+O `proxy.ts` intercepta o `Host` header e faz rewrite interno para a rota correcta. O utilizador nunca vê o URL mudar.
 
 ---
 
@@ -35,36 +36,72 @@ O parâmetro de rota chama-se `slug` (não `slug`) para ficar mais legível no c
 
 ```sql
 CREATE TABLE mentoras (
-  id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  slug                TEXT UNIQUE NOT NULL,
-  subdominio          TEXT UNIQUE,
-  dominio_custom      TEXT UNIQUE,
-  nome                TEXT NOT NULL,
-  email               TEXT NOT NULL,
-  titulo              TEXT NOT NULL DEFAULT 'Descubra a Sua Personalidade',
-  subtitulo           TEXT NOT NULL DEFAULT 'Um questionário científico de 120 perguntas baseado no modelo Big Five.',
-  logo_principal_url  TEXT,
-  logo_secundaria_url TEXT,
-  logo_icone_url      TEXT,
-  cor_primaria        TEXT NOT NULL DEFAULT '#6366f1',
-  cor_fundo           TEXT NOT NULL DEFAULT '#ffffff',
-  cor_texto           TEXT NOT NULL DEFAULT '#111827',
-  texto_botao         TEXT NOT NULL DEFAULT 'Iniciar teste',
-  opcoes_resposta     JSONB NOT NULL DEFAULT '["Discordo totalmente","Discordo","Neutro","Concordo","Concordo totalmente"]'::jsonb,
-  titulo_obrigado     TEXT NOT NULL DEFAULT 'Obrigado!',
-  texto_obrigado      TEXT NOT NULL DEFAULT 'As suas respostas foram enviadas. Receberá a análise em breve.',
+  id                  UUID    PRIMARY KEY DEFAULT gen_random_uuid(),
+
+  -- Identidade e acesso
+  slug                TEXT    UNIQUE NOT NULL,
+  subdominio          TEXT    UNIQUE,
+  dominio_custom      TEXT    UNIQUE,
+
+  -- Informação da mentora
+  nome                TEXT    NOT NULL,
+  email               TEXT    NOT NULL,
+
+  -- Logos
+  logo_principal_url  TEXT,                        -- landing page e obrigado
+  logo_secundaria_url TEXT,                        -- formulário do teste
+  logo_icone_url      TEXT,                        -- reservado
+
+  -- Personalização visual
+  cor_primaria        TEXT    NOT NULL DEFAULT '#6366f1',
+  cor_fundo           TEXT    NOT NULL DEFAULT '#ffffff',
+  cor_texto           TEXT    NOT NULL DEFAULT '#111827',
+
+  -- Personalização da landing page
+  titulo              TEXT    NOT NULL DEFAULT 'Descubra a Sua Personalidade',
+  subtitulo           TEXT    NOT NULL DEFAULT 'Um questionário científico de 120 perguntas baseado no modelo Big Five.',
+  texto_botao         TEXT    NOT NULL DEFAULT 'Iniciar teste',
+
+  -- Perguntas pessoais do formulário
+  -- Nome e email são sempre obrigatórios e não estão aqui.
+  -- Este campo define perguntas extra opcionais ou obrigatórias por mentora.
+  perguntas_extras    JSONB   NOT NULL DEFAULT '[]'::jsonb,
+
+  -- Personalização do formulário (opções de resposta do teste)
+  opcoes_resposta     JSONB   NOT NULL DEFAULT '["Discordo totalmente","Discordo","Neutro","Concordo","Concordo totalmente"]'::jsonb,
+
+  -- Personalização da página de obrigado
+  titulo_obrigado     TEXT    NOT NULL DEFAULT 'Obrigado!',
+  texto_obrigado      TEXT    NOT NULL DEFAULT 'As suas respostas foram enviadas. Receberá a análise em breve.',
+
+  -- IA
   openai_api_key      TEXT,
   prompt_extra        TEXT,
+
+  -- Controlo
   ativo               BOOLEAN NOT NULL DEFAULT TRUE,
   criado_em           TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   atualizado_em       TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 ```
 
-### Tipo TypeScript
+---
+
+## Tipo TypeScript
 
 ```typescript
 // types/mentora.ts
+
+export interface PerguntaExtra {
+  id: string; // identificador interno (chave no state do formulário)
+  label: string; // texto exibido no formulário (ex: "Qual a sua idade?")
+  tipo: "text" | "number" | "textarea";
+  placeholder?: string; // placeholder do campo
+  obrigatorio: boolean;
+  ordem: number; // ordem de exibição no formulário (0-based)
+  payload?: string; // chave enviada ao webhook/IA; se vazio, usa o id
+}
+
 export interface Mentora {
   id: string;
   slug: string;
@@ -72,37 +109,26 @@ export interface Mentora {
   dominioCustom: string | null;
   nome: string;
   email: string;
+  logoPrincipalUrl: string | null;
+  logoSecundariaUrl: string | null;
+  logoIconeUrl: string | null;
+  corPrimaria: string;
+  corFundo: string;
+  corTexto: string;
   titulo: string;
   subtitulo: string;
-  logoPrincipalUrl:  string | null;
-  logoSecundariaUrl: string | null;
-  logoIconeUrl:      string | null;
-  corPrimaria:    string;
-  corFundo:       string;
-  corTexto:       string;
-  textoBotao:     string;
+  textoBotao: string;
+  perguntasExtras: PerguntaExtra[];
   opcoesResposta: [string, string, string, string, string];
   tituloObrigado: string;
-  textoObrigado:  string;
-  openaiApiKey:   string | null;
-  promptExtra:    string | null;
-  ativo:          boolean;
-  criadoEm:       Date;
-  atualizadoEm:   Date;
+  textoObrigado: string;
+  openaiApiKey: string | null;
+  promptExtra: string | null;
+  ativo: boolean;
+  criadoEm: Date;
+  atualizadoEm: Date;
 }
 ```
-
-### Regra de uso dos logos
-
-| Campo              | Onde é usado                 |
-| ------------------ | ---------------------------- |
-| `logoPrincipalUrl` | Landing page e página obrigado |
-| `logoSecundariaUrl`| Formulário e perguntas do teste |
-| `logoIconeUrl`     | Reservado (uso futuro)       |
-
-### Opções de resposta
-
-`opcoesResposta` é um array JSONB de exactamente 5 strings. O índice + 1 corresponde ao valor enviado para o scoring (1–5). O scoring em si não muda — só os labels apresentados ao utilizador mudam.
 
 ---
 
@@ -110,7 +136,7 @@ export interface Mentora {
 
 ```typescript
 import { pool } from "./client";
-import { Mentora } from "@/types/mentora";
+import { Mentora, PerguntaExtra } from "@/types/mentora";
 
 function mapRow(row: Record<string, unknown>): Mentora {
   return {
@@ -120,16 +146,23 @@ function mapRow(row: Record<string, unknown>): Mentora {
     dominioCustom: row.dominio_custom as string | null,
     nome: row.nome as string,
     email: row.email as string,
-    titulo: row.titulo as string,
-    subtitulo: row.subtitulo as string,
     logoPrincipalUrl: row.logo_principal_url as string | null,
     logoSecundariaUrl: row.logo_secundaria_url as string | null,
     logoIconeUrl: row.logo_icone_url as string | null,
     corPrimaria: row.cor_primaria as string,
-    corFundo: (row.cor_fundo as string) ?? '#ffffff',
-    corTexto: (row.cor_texto as string) ?? '#111827',
+    corFundo: row.cor_fundo as string,
+    corTexto: row.cor_texto as string,
+    titulo: row.titulo as string,
+    subtitulo: row.subtitulo as string,
     textoBotao: row.texto_botao as string,
-    opcoesResposta: row.opcoes_resposta as [string, string, string, string, string],
+    perguntasExtras: row.perguntas_extras as PerguntaExtra[],
+    opcoesResposta: row.opcoes_resposta as [
+      string,
+      string,
+      string,
+      string,
+      string,
+    ],
     tituloObrigado: row.titulo_obrigado as string,
     textoObrigado: row.texto_obrigado as string,
     openaiApiKey: row.openai_api_key as string | null,
@@ -169,15 +202,15 @@ export async function getMentoraByHost(host: string): Promise<Mentora | null> {
 
 ---
 
-## middleware.ts (raiz do projecto)
+## proxy.ts (raiz do projecto)
 
 ```typescript
 import { NextRequest, NextResponse } from "next/server";
 
-const ROOT_DOMAIN = "big5.estrutura.ai";
+const ROOT_DOMAIN = "bigfive.strutura.ai";
 const PLATFORM_HOSTS = new Set([ROOT_DOMAIN, "localhost:3000", "localhost"]);
 
-export async function middleware(req: NextRequest) {
+export function proxy(req: NextRequest) {
   const host = req.headers.get("host") ?? "";
   const hostname = host.split(":")[0];
   const pathname = req.nextUrl.pathname;
@@ -215,34 +248,31 @@ export const config = {
 ## Estrutura de Ficheiros
 
 ```
-middleware.ts
+proxy.ts
 app/
+  page.tsx                          ← landing page de marketing
   [slug]/
-    page.tsx              ← getMentoraBySlug(params.slug)
-    questionario/
-      page.tsx
-    obrigado/
-      page.tsx
+    page.tsx                        ← getMentoraBySlug
+    questionario/page.tsx
+    obrigado/page.tsx
   _subdomain/
     [sub]/
-      page.tsx            ← getMentoraBySubdominio(params.sub)
-      questionario/
-        page.tsx
-      obrigado/
-        page.tsx
+      page.tsx                      ← getMentoraBySubdominio
+      questionario/page.tsx
+      obrigado/page.tsx
   _domain/
     [host]/
-      page.tsx            ← getMentoraByHost(params.host)
-      questionario/
-        page.tsx
-      obrigado/
-        page.tsx
+      page.tsx                      ← getMentoraByHost
+      questionario/page.tsx
+      obrigado/page.tsx
+  api/
+    submeter/
+      route.ts                      ← recebe respostas, calcula score, envia para n8n
 components/
   mentora/
-    LandingPage.tsx       ← recebe mentora: Mentora como prop
-    TesteCliente.tsx
-    ObrigadoPage.tsx
-    MentoraLoader.tsx
+    LandingPage.tsx                 ← logoPrincipalUrl, corFundo, corTexto, textoBotao
+    QuestionarioCliente.tsx         ← Client Component — formulário de dados + 120 perguntas
+    ObrigadoPage.tsx                ← logoPrincipalUrl, tituloObrigado, textoObrigado
 lib/
   db/
     client.ts
@@ -258,18 +288,74 @@ db/
 
 ---
 
-## Modelo de Dados do Teste (IPIP-NEO-120)
+## Formulário de dados pessoais
+
+Campos fixos (sempre presentes, sempre obrigatórios):
+
+- Nome completo
+- Email
+- Celular (com selector de país e formatação automática; guardado em formato E.164, ex: `+5511987654321`)
+
+Campos dinâmicos (vêm de `mentora.perguntasExtras`):
+
+```json
+[
+  { "id": "idade", "label": "Idade", "tipo": "number", "obrigatorio": false, "ordem": 0, "payload": "client_age" },
+  {
+    "id": "profissao",
+    "label": "Profissão",
+    "tipo": "text",
+    "obrigatorio": false,
+    "ordem": 1
+  },
+  {
+    "id": "objetivo",
+    "label": "Qual o seu objectivo",
+    "tipo": "textarea",
+    "obrigatorio": true,
+    "ordem": 2,
+    "payload": "client_goal"
+  }
+]
+```
+
+Se `perguntasExtras` for `[]`, o formulário mostra apenas nome e email.
+
+---
+
+## Payload enviado ao n8n (POST)
 
 ```typescript
-interface Item {
-  id: number;
-  text: string; // português
-  textEn: string;
-  domain: "N" | "E" | "O" | "A" | "C";
-  facet: string;
-  reverse: boolean;
+{
+  mentora: {
+    nome:          string;
+    email:         string;
+    openaiApiKey:  string | null;
+    promptExtra:   string | null;
+  };
+  cliente: {
+    nome:    string;
+    email:   string;
+    celular: string;          // formato E.164 (ex: "+5511987654321")
+    [id: string]: string;     // respostas às perguntas_extras, chave = PerguntaExtra.payload (ou .id se payload vazio)
+  };
+  resultados: Array<{
+    dominio:    string;
+    codigo:     'N' | 'E' | 'O' | 'A' | 'C';
+    percentil:  number;
+    pontuacao:  number;
+    nivel:      'Baixo' | 'Médio' | 'Alto';
+    facetas: Array<{
+      nome:      string;
+      percentil: number;
+      pontuacao: number;
+      nivel:     'Baixo' | 'Médio' | 'Alto';
+    }>;
+  }>;
 }
 ```
+
+---
 
 ## Scoring (lib/scoring.ts)
 
@@ -281,6 +367,8 @@ interface Item {
 6. Percentil domínio: `((score - 24) / 96) * 100`
 7. Nível: `< 35 → Baixo`, `35–65 → Médio`, `> 65 → Alto`
 
+---
+
 ## Cores por Domínio
 
 | Código | Domínio           | Cor       |
@@ -291,37 +379,7 @@ interface Item {
 | A      | Amabilidade       | `#10B981` |
 | C      | Conscienciosidade | `#3B82F6` |
 
-## Payload para o n8n
-
-```typescript
-interface ResultadosPayload {
-  mentora: {
-    nome: string;
-    email: string;
-    openaiApiKey: string | null;
-    promptExtra: string | null;
-  };
-  cliente: {
-    nome: string;
-    email: string;
-    idade?: string;
-    profissao?: string;
-  };
-  resultados: Array<{
-    dominio: string;
-    codigo: "N" | "E" | "O" | "A" | "C";
-    percentil: number;
-    pontuacao: number;
-    nivel: "Baixo" | "Médio" | "Alto";
-    facetas: Array<{
-      nome: string;
-      percentil: number;
-      pontuacao: number;
-      nivel: "Baixo" | "Médio" | "Alto";
-    }>;
-  }>;
-}
-```
+---
 
 ## Variáveis de Ambiente
 
@@ -336,6 +394,45 @@ OPENAI_API_KEY=sk-...
 - UI totalmente em português
 - snake_case na BD, camelCase no TypeScript
 - Sem CSS modules — só Tailwind
-- Server Components por defeito; Client Components apenas onde há interactividade (teste)
+- Server Components por defeito; Client Components apenas onde há interactividade
 - `notFound()` para slugs inválidos ou mentoras inativas
 - Sem autenticação — gestão feita directamente na BD
+- Next.js 16: usar `proxy.ts` com `export function proxy()`, não `middleware.ts`
+
+---
+
+## Dashboard de Administração (/admin)
+
+Área exclusiva do administrador (Leonardo) para gerir mentoras.
+**Sem Clerk** — autenticação por senha simples guardada no `.env`.
+
+### Autenticação
+
+Senha guardada em `.env`:
+
+```env
+ADMIN_PASSWORD=...
+```
+
+Fluxo:
+
+- `/admin` → redireciona para `/admin/login` se não autenticado
+- Login valida contra `ADMIN_PASSWORD` e guarda cookie de sessão `admin_session`
+- Cookie é um valor fixo também definido no `.env` (`ADMIN_SESSION_SECRET`)
+- O `proxy.ts` protege todas as rotas `/admin/*` verificando o cookie
+
+### Rotas do dashboard
+
+| Rota                   | O que faz                          |
+| ---------------------- | ---------------------------------- |
+| `/admin/login`         | Página de login com campo de senha |
+| `/admin`               | Lista de todas as mentoras         |
+| `/admin/mentoras/nova` | Formulário para criar mentora      |
+| `/admin/mentoras/[id]` | Formulário para editar mentora     |
+
+### Variáveis de ambiente adicionais
+
+```env
+ADMIN_PASSWORD=escolhe-uma-senha-forte
+ADMIN_SESSION_SECRET=string-aleatoria-longa
+```

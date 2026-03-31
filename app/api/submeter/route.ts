@@ -7,7 +7,7 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   const { slug, cliente, respostas } = body as {
     slug: string;
-    cliente: { nome: string; email: string; idade?: string; profissao?: string };
+    cliente: Record<string, string>;
     respostas: Answers;
   };
 
@@ -22,6 +22,19 @@ export async function POST(req: NextRequest) {
 
   const result = calculateResults(respostas);
 
+  // Remapear chaves do cliente usando o campo payload da pergunta extra
+  const clientePayload: Record<string, string> = {
+    nome: cliente.nome,
+    email: cliente.email,
+    celular: cliente.celular,
+  };
+  for (const p of mentora.perguntasExtras) {
+    if (cliente[p.id] !== undefined) {
+      const key = p.payload?.trim() || p.id;
+      clientePayload[key] = cliente[p.id];
+    }
+  }
+
   const payload = {
     mentora: {
       nome: mentora.nome,
@@ -29,7 +42,7 @@ export async function POST(req: NextRequest) {
       openaiApiKey: mentora.openaiApiKey,
       promptExtra: mentora.promptExtra,
     },
-    cliente,
+    cliente: clientePayload,
     resultados: result.domains.map((d) => ({
       dominio: d.domainPt,
       codigo: d.domain,

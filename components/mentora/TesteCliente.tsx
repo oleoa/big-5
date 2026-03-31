@@ -4,24 +4,17 @@ import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Mentora } from "@/types/mentora";
 import items from "@/data/ipip-neo-120-items.json";
+import PhoneInput, { isValidPhone } from "@/components/mentora/PhoneInput";
 
 type Fase = "dados" | "teste" | "enviando";
-
-interface DadosCliente {
-  nome: string;
-  email: string;
-  idade: string;
-  profissao: string;
-}
 
 export default function TesteCliente({ mentora }: { mentora: Mentora }) {
   const router = useRouter();
   const [fase, setFase] = useState<Fase>("dados");
-  const [dados, setDados] = useState<DadosCliente>({
+  const [dados, setDados] = useState<Record<string, string>>({
     nome: "",
     email: "",
-    idade: "",
-    profissao: "",
+    celular: "",
   });
   const [perguntaAtual, setPerguntaAtual] = useState(0);
   const [respostas, setRespostas] = useState<Record<number, number>>({});
@@ -38,9 +31,19 @@ export default function TesteCliente({ mentora }: { mentora: Mentora }) {
       setErro("Por favor, insira um email válido.");
       return;
     }
+    if (!dados.celular || !isValidPhone(dados.celular)) {
+      setErro("Por favor, insira um número de celular válido.");
+      return;
+    }
+    for (const p of mentora.perguntasExtras) {
+      if (p.obrigatorio && !dados[p.id]?.trim()) {
+        setErro(`Por favor, preencha o campo "${p.label}".`);
+        return;
+      }
+    }
     setErro("");
     setFase("teste");
-  }, [dados]);
+  }, [dados, mentora.perguntasExtras]);
 
   const responder = useCallback(
     async (valor: number) => {
@@ -58,12 +61,7 @@ export default function TesteCliente({ mentora }: { mentora: Mentora }) {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               slug: mentora.slug,
-              cliente: {
-                nome: dados.nome,
-                email: dados.email,
-                ...(dados.idade && { idade: dados.idade }),
-                ...(dados.profissao && { profissao: dados.profissao }),
-              },
+              cliente: dados,
               respostas: novasRespostas,
             }),
           });
@@ -122,10 +120,11 @@ export default function TesteCliente({ mentora }: { mentora: Mentora }) {
               <input
                 type="text"
                 value={dados.nome}
-                onChange={(e) => setDados({ ...dados, nome: e.target.value })}
+                onChange={(e) => setDados(prev => ({ ...prev, nome: e.target.value }))}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50"
                 style={{ focusRingColor: cor } as React.CSSProperties}
                 placeholder="O seu nome"
+                required
               />
             </div>
 
@@ -136,39 +135,50 @@ export default function TesteCliente({ mentora }: { mentora: Mentora }) {
               <input
                 type="email"
                 value={dados.email}
-                onChange={(e) => setDados({ ...dados, email: e.target.value })}
+                onChange={(e) => setDados(prev => ({ ...prev, email: e.target.value }))}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50"
                 placeholder="o-seu@email.com"
+                required
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium mb-1">
-                Idade
+                Celular *
               </label>
-              <input
-                type="text"
-                value={dados.idade}
-                onChange={(e) => setDados({ ...dados, idade: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50"
-                placeholder="Opcional"
+              <PhoneInput
+                value={dados.celular}
+                onChange={(val) => setDados(prev => ({ ...prev, celular: val }))}
+                corFundo={mentora.corFundo}
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Profissão
-              </label>
-              <input
-                type="text"
-                value={dados.profissao}
-                onChange={(e) =>
-                  setDados({ ...dados, profissao: e.target.value })
-                }
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50"
-                placeholder="Opcional"
-              />
-            </div>
+            {[...mentora.perguntasExtras].sort((a, b) => (a.ordem ?? 0) - (b.ordem ?? 0)).map((pergunta) => (
+              <div key={pergunta.id}>
+                <label className="block text-sm font-medium mb-1">
+                  {pergunta.label}{pergunta.obrigatorio ? ' *' : ''}
+                </label>
+                {pergunta.tipo === 'textarea' ? (
+                  <textarea
+                    value={dados[pergunta.id] ?? ''}
+                    onChange={(e) => setDados(prev => ({ ...prev, [pergunta.id]: e.target.value }))}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50"
+                    placeholder={pergunta.placeholder || (pergunta.obrigatorio ? '' : 'Opcional')}
+                    required={pergunta.obrigatorio}
+                    rows={3}
+                  />
+                ) : (
+                  <input
+                    type={pergunta.tipo}
+                    value={dados[pergunta.id] ?? ''}
+                    onChange={(e) => setDados(prev => ({ ...prev, [pergunta.id]: e.target.value }))}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50"
+                    placeholder={pergunta.placeholder || (pergunta.obrigatorio ? '' : 'Opcional')}
+                    required={pergunta.obrigatorio}
+                  />
+                )}
+              </div>
+            ))}
           </div>
 
           <button

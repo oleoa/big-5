@@ -1,3 +1,13 @@
+export interface PerguntaExtra {
+  id: string;
+  label: string;
+  tipo: 'text' | 'number' | 'textarea';
+  placeholder?: string;
+  obrigatorio: boolean;
+  ordem: number;
+  payload?: string;
+}
+
 export interface Mentora {
   id: string;
   slug: string;
@@ -17,6 +27,7 @@ export interface Mentora {
   opcoesResposta: [string, string, string, string, string];
   tituloObrigado: string;
   textoObrigado: string;
+  perguntasExtras: PerguntaExtra[];
   openaiApiKey: string | null;
   promptExtra: string | null;
   ativo: boolean;
