@@ -47,8 +47,31 @@ export default function ThankYouPage() {
 
       fetch(WEBHOOK_URL, {
         method: "POST",
-        headers: { "Content-Type": "text/html" },
-        body: html,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          nome: personalInfo?.name ?? "",
+          dadosPessoais: {
+            idade: personalInfo?.age ?? "",
+            email: personalInfo?.email ?? "",
+            profissao: personalInfo?.profession ?? "",
+            filhos: personalInfo?.children ?? "",
+          },
+          resultados: result.domains.map((d) => ({
+            dominio: d.domainPt,
+            codigo: d.domain,
+            percentil: d.percentile,
+            pontuacao: d.score,
+            nivel: d.descriptor,
+            facetas: d.facets.map((f) => ({
+              nome: f.facetPt,
+              percentil: f.percentile,
+              pontuacao: f.score,
+              nivel: f.descriptor,
+            })),
+          })),
+          completadoEm: result.completedAt,
+          html,
+        }),
       }).catch(() => {
         // Silently ignore — the user sees the thank you page regardless
       });
