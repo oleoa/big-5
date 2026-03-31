@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 const STORAGE_KEY_ANSWERS = "big5-answers";
 const STORAGE_KEY_INDEX = "big5-currentIndex";
 const STORAGE_KEY_PERSONAL = "big5-personal";
+const STORAGE_KEY_CLIENT_ID = "big5-clientId";
 
 export default function DevRandomButton() {
   const router = useRouter();
@@ -25,6 +26,7 @@ export default function DevRandomButton() {
         children: "0",
       })
     );
+    localStorage.setItem(STORAGE_KEY_CLIENT_ID, "cd31397e-b355-47da-b691-bdcc12c1657b");
     router.push("/results");
   };
 
@@ -32,6 +34,7 @@ export default function DevRandomButton() {
     localStorage.removeItem(STORAGE_KEY_ANSWERS);
     localStorage.removeItem(STORAGE_KEY_INDEX);
     localStorage.removeItem(STORAGE_KEY_PERSONAL);
+    localStorage.removeItem(STORAGE_KEY_CLIENT_ID);
   };
 
   if (process.env.NODE_ENV !== "development") return null;

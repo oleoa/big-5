@@ -1,223 +1,341 @@
-# CLAUDE.md — Big Five IPIP-NEO-120 Personality Test
+# CLAUDE.md — Big Five Estrutura AI (big5.estrutura.ai)
 
-## Project Overview
+## Visão Geral
 
-A web application that administers the IPIP-NEO-120 personality questionnaire, scores it according to the official Big Five model (5 domains × 6 facets × 4 items = 120 items), and presents results with visual charts.
-
-**Brand:** Valquiria Abreu
-**Stack:** Next.js (App Router) + Tailwind CSS (via Windsurf/wind)
-**Language:** TypeScript
-**Data:** All 120 items are in `/data/ipip-neo-120-items.json`
+Plataforma multi-tenant de testes de personalidade Big Five (IPIP-NEO-120).
+Cada mentora tem a sua própria página personalizada acessível de três formas diferentes.
+**Não há autenticação de mentoras** — toda a gestão é feita directamente na base de dados pelo administrador.
 
 ---
 
-## Branding — Valquiria Abreu
+## Stack
 
-All UI work MUST follow the Valquiria Abreu brand identity. The full branding guide is at `/data/branding.pdf`.
-
-### Brand Color Palette
-
-CSS variables are defined in `app/globals.css` and exposed via Tailwind's `@theme inline`. Always use the semantic Tailwind classes, never hardcoded gray/blue Tailwind utilities.
-
-| Token            | Tailwind Class   | Hex       | Usage                                              |
-| ---------------- | ---------------- | --------- | -------------------------------------------------- |
-| `--primary`      | `bg-primary`     | `#355e81` | Buttons, links, progress bars, selected states      |
-| `--primary-light`| `bg-primary-light`| `#a8b9c8`| Secondary backgrounds, subtle highlights            |
-| `--accent`       | `bg-accent`      | `#aa4837` | Hover states on CTAs, emphasis, terracota warmth    |
-| `--background`   | `bg-background`  | `#f2eeeb` | Page background (off-white)                         |
-| `--surface`      | `bg-surface`     | `#ffffff` | Cards, panels, elevated containers                  |
-| `--border`       | `border-border`  | `#d8cfc9` | Borders, dividers, separators (taupe/bege)          |
-| `--foreground`   | `text-foreground` | `#2d2d2d`| Body text (use opacity variants: `/60`, `/50`, `/40`) |
-
-### Logo Assets (in `/public/`)
-
-| File                  | Description                          | Where to use                          |
-| --------------------- | ------------------------------------ | ------------------------------------- |
-| `logo.png`            | Main mark (symbol + name, vertical)  | Landing page hero                     |
-| `logo-horizontal.png` | Secondary mark (symbol + name, inline)| Site headers, test/results pages      |
-| `icon.png`            | Symbol only (circular swirl)         | Favicon, small brand marks            |
-
-Source files are in `/data/logos/`.
-
-### Design Principles
-
-- **No emojis** — use colored dots or the domain colors for visual indicators
-- **No raw Tailwind grays/blues** — always use the brand CSS variables (`bg-background` not `bg-gray-50`, `border-border` not `border-gray-200`, `bg-primary` not `bg-blue-500`)
-- **Backgrounds:** page = `bg-background` (off-white), cards = `bg-surface` (white)
-- **Buttons:** primary = `bg-primary` with `hover:bg-accent`, secondary = text with `hover:bg-surface`
-- **Text opacity:** use `text-foreground/60` for secondary text, `text-foreground/40` for muted text — not `text-gray-500`
-- **Typography:** clean, contemporary, light — the brand conveys leveza (lightness) and sofisticação acessível (accessible sophistication)
-- **Animations:** keep existing slide-in and fade-in animations for smooth transitions
+- **Framework**: Next.js 14+ com App Router
+- **Linguagem**: TypeScript estrito
+- **Styling**: Tailwind CSS
+- **Base de dados**: PostgreSQL (Railway ou Neon) via `pg`
+- **Automação / IA**: n8n self-hosted + OpenAI Assistants API
+- **Hosting**: Vercel
 
 ---
 
-## Domain Model
+## Três formas de aceder à página de uma mentora
 
-### Big Five Domains (OCEAN)
+| URL                                 | Como funciona                                                     |
+| ----------------------------------- | ----------------------------------------------------------------- |
+| `big5.estrutura.ai/valquiria-abreu` | Rota dinâmica `[slug]` — sempre disponível                        |
+| `valquiria.big5.estrutura.ai`       | Wildcard DNS → middleware resolve pelo campo `subdominio`         |
+| `bigfive.valquiriaabreu.com`        | CNAME da mentora → middleware resolve pelo campo `dominio_custom` |
 
-| Code | Domain PT              | Domain EN              | Items |
-| ---- | ---------------------- | ---------------------- | ----- |
-| O    | Abertura à Experiência | Openness to Experience | 24    |
-| C    | Conscienciosidade      | Conscientiousness      | 24    |
-| E    | Extroversão            | Extraversion           | 24    |
-| A    | Amabilidade            | Agreeableness          | 24    |
-| N    | Neuroticismo           | Neuroticism            | 24    |
-
-### 30 Facets (6 per domain, 4 items per facet)
-
-**Neuroticism (N):** Anxiety, Anger, Depression, Self-Consciousness, Immoderation, Vulnerability
-**Extraversion (E):** Friendliness, Gregariousness, Assertiveness, Activity Level, Excitement-Seeking, Cheerfulness
-**Openness (O):** Imagination, Artistic Interests, Emotionality, Adventurousness, Intellect, Liberalism
-**Agreeableness (A):** Trust, Morality, Altruism, Cooperation, Modesty, Sympathy
-**Conscientiousness (C):** Self-Efficacy, Orderliness, Dutifulness, Achievement-Striving, Self-Discipline, Cautiousness
-
-### Scoring Rules
-
-1. Each item is answered on a 1–5 Likert scale:
-   - 1 = Muito Impreciso (Very Inaccurate)
-   - 2 = Moderadamente Impreciso (Moderately Inaccurate)
-   - 3 = Nem Preciso nem Impreciso (Neither)
-   - 4 = Moderadamente Preciso (Moderately Accurate)
-   - 5 = Muito Preciso (Very Accurate)
-
-2. **Reverse-scored items** (`reverse: true` in JSON): flip the value → `score = 6 - rawValue`
-
-3. **Facet score** = sum of the 4 items in that facet (range 4–20)
-
-4. **Domain score** = sum of all 24 items in that domain (range 24–120), which equals sum of its 6 facet scores
-
-5. **Percentile mapping**: Use the norm tables from Johnson (2014) or a simple linear approximation:
-   - Domain: `percentile ≈ ((score - 24) / 96) * 100`
-   - Facet: `percentile ≈ ((score - 4) / 16) * 100`
-   - For a more accurate approach, use the norm tables at https://osf.io/tbmh5/
-
-6. **Descriptors**:
-   - Low: percentile < 30
-   - Average: 30 ≤ percentile ≤ 70
-   - High: percentile > 70
+O parâmetro de rota chama-se `slug` (não `slug`) para ficar mais legível no código.
 
 ---
 
-## Item Data Schema
+## Schema da Base de Dados
+
+```sql
+CREATE TABLE mentoras (
+  id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  slug                TEXT UNIQUE NOT NULL,
+  subdominio          TEXT UNIQUE,
+  dominio_custom      TEXT UNIQUE,
+  nome                TEXT NOT NULL,
+  email               TEXT NOT NULL,
+  titulo              TEXT NOT NULL DEFAULT 'Descubra a Sua Personalidade',
+  subtitulo           TEXT NOT NULL DEFAULT 'Um questionário científico de 120 perguntas baseado no modelo Big Five.',
+  logo_principal_url  TEXT,
+  logo_secundaria_url TEXT,
+  logo_icone_url      TEXT,
+  cor_primaria        TEXT NOT NULL DEFAULT '#6366f1',
+  cor_fundo           TEXT NOT NULL DEFAULT '#ffffff',
+  cor_texto           TEXT NOT NULL DEFAULT '#111827',
+  texto_botao         TEXT NOT NULL DEFAULT 'Iniciar teste',
+  opcoes_resposta     JSONB NOT NULL DEFAULT '["Discordo totalmente","Discordo","Neutro","Concordo","Concordo totalmente"]'::jsonb,
+  titulo_obrigado     TEXT NOT NULL DEFAULT 'Obrigado!',
+  texto_obrigado      TEXT NOT NULL DEFAULT 'As suas respostas foram enviadas. Receberá a análise em breve.',
+  openai_api_key      TEXT,
+  prompt_extra        TEXT,
+  ativo               BOOLEAN NOT NULL DEFAULT TRUE,
+  criado_em           TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  atualizado_em       TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+```
+
+### Tipo TypeScript
 
 ```typescript
-interface Item {
-  id: number; // 1–120
-  text: string; // Portuguese text
-  textEn: string; // English text (reference)
-  domain: "N" | "E" | "O" | "A" | "C";
-  facet: string; // e.g. "Anxiety", "Friendliness"
-  reverse: boolean; // true = score is 6 - rawValue
+// types/mentora.ts
+export interface Mentora {
+  id: string;
+  slug: string;
+  subdominio: string | null;
+  dominioCustom: string | null;
+  nome: string;
+  email: string;
+  titulo: string;
+  subtitulo: string;
+  logoPrincipalUrl:  string | null;
+  logoSecundariaUrl: string | null;
+  logoIconeUrl:      string | null;
+  corPrimaria:    string;
+  corFundo:       string;
+  corTexto:       string;
+  textoBotao:     string;
+  opcoesResposta: [string, string, string, string, string];
+  tituloObrigado: string;
+  textoObrigado:  string;
+  openaiApiKey:   string | null;
+  promptExtra:    string | null;
+  ativo:          boolean;
+  criadoEm:       Date;
+  atualizadoEm:   Date;
+}
+```
+
+### Regra de uso dos logos
+
+| Campo              | Onde é usado                 |
+| ------------------ | ---------------------------- |
+| `logoPrincipalUrl` | Landing page e página obrigado |
+| `logoSecundariaUrl`| Formulário e perguntas do teste |
+| `logoIconeUrl`     | Reservado (uso futuro)       |
+
+### Opções de resposta
+
+`opcoesResposta` é um array JSONB de exactamente 5 strings. O índice + 1 corresponde ao valor enviado para o scoring (1–5). O scoring em si não muda — só os labels apresentados ao utilizador mudam.
+
+---
+
+## lib/db/mentoras.ts
+
+```typescript
+import { pool } from "./client";
+import { Mentora } from "@/types/mentora";
+
+function mapRow(row: Record<string, unknown>): Mentora {
+  return {
+    id: row.id as string,
+    slug: row.slug as string,
+    subdominio: row.subdominio as string | null,
+    dominioCustom: row.dominio_custom as string | null,
+    nome: row.nome as string,
+    email: row.email as string,
+    titulo: row.titulo as string,
+    subtitulo: row.subtitulo as string,
+    logoPrincipalUrl: row.logo_principal_url as string | null,
+    logoSecundariaUrl: row.logo_secundaria_url as string | null,
+    logoIconeUrl: row.logo_icone_url as string | null,
+    corPrimaria: row.cor_primaria as string,
+    corFundo: (row.cor_fundo as string) ?? '#ffffff',
+    corTexto: (row.cor_texto as string) ?? '#111827',
+    textoBotao: row.texto_botao as string,
+    opcoesResposta: row.opcoes_resposta as [string, string, string, string, string],
+    tituloObrigado: row.titulo_obrigado as string,
+    textoObrigado: row.texto_obrigado as string,
+    openaiApiKey: row.openai_api_key as string | null,
+    promptExtra: row.prompt_extra as string | null,
+    ativo: row.ativo as boolean,
+    criadoEm: row.criado_em as Date,
+    atualizadoEm: row.atualizado_em as Date,
+  };
+}
+
+export async function getMentoraBySlug(slug: string): Promise<Mentora | null> {
+  const { rows } = await pool.query(
+    "SELECT * FROM mentoras WHERE slug = $1 AND ativo = TRUE LIMIT 1",
+    [slug],
+  );
+  return rows[0] ? mapRow(rows[0]) : null;
+}
+
+export async function getMentoraBySubdominio(
+  sub: string,
+): Promise<Mentora | null> {
+  const { rows } = await pool.query(
+    "SELECT * FROM mentoras WHERE subdominio = $1 AND ativo = TRUE LIMIT 1",
+    [sub],
+  );
+  return rows[0] ? mapRow(rows[0]) : null;
+}
+
+export async function getMentoraByHost(host: string): Promise<Mentora | null> {
+  const { rows } = await pool.query(
+    "SELECT * FROM mentoras WHERE dominio_custom = $1 AND ativo = TRUE LIMIT 1",
+    [host],
+  );
+  return rows[0] ? mapRow(rows[0]) : null;
 }
 ```
 
 ---
 
-## App Structure
+## middleware.ts (raiz do projecto)
+
+```typescript
+import { NextRequest, NextResponse } from "next/server";
+
+const ROOT_DOMAIN = "big5.estrutura.ai";
+const PLATFORM_HOSTS = new Set([ROOT_DOMAIN, "localhost:3000", "localhost"]);
+
+export async function middleware(req: NextRequest) {
+  const host = req.headers.get("host") ?? "";
+  const hostname = host.split(":")[0];
+  const pathname = req.nextUrl.pathname;
+
+  if (pathname.startsWith("/_next") || pathname.startsWith("/api")) {
+    return NextResponse.next();
+  }
+
+  // Subdomínio da plataforma → /_subdomain/[sub]/...
+  if (hostname.endsWith(`.${ROOT_DOMAIN}`)) {
+    const subdomain = hostname.replace(`.${ROOT_DOMAIN}`, "");
+    const url = req.nextUrl.clone();
+    url.pathname = `/_subdomain/${subdomain}${pathname}`;
+    return NextResponse.rewrite(url);
+  }
+
+  // Domínio raiz → rotas normais [slug]
+  if (PLATFORM_HOSTS.has(hostname)) {
+    return NextResponse.next();
+  }
+
+  // Domínio custom da mentora → /_domain/[host]/...
+  const url = req.nextUrl.clone();
+  url.pathname = `/_domain/${hostname}${pathname}`;
+  return NextResponse.rewrite(url);
+}
+
+export const config = {
+  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+};
+```
+
+---
+
+## Estrutura de Ficheiros
 
 ```
-/app
-  /page.tsx                    → Landing / start page (logo hero + domain cards)
-  /test/page.tsx               → Questionnaire (120 questions, one per page)
-  /results/page.tsx            → Results dashboard with charts
-  /globals.css                 → Brand CSS variables + animations
-  /layout.tsx                  → Root layout (fonts, metadata, favicon)
-/components
-  /QuestionCard.tsx            → Single question with 5 Likert-scale buttons
-  /ProgressBar.tsx             → Shows progress (e.g. 34/120)
-  /RadarChart.tsx              → SVG radar/spider chart for 5 domains
-  /FacetBreakdown.tsx          → Expandable accordion with facet bar charts
-/data
-  /ipip-neo-120-items.json     → The 120 items
-  /branding.pdf                → Full brand identity guide
-  /logos/                      → Original logo source files
-/lib
-  /scoring.ts                  → Scoring logic (reverse, facet sums, domain sums, percentiles)
-  /types.ts                    → TypeScript interfaces
-  /descriptions.ts             → Domain info (colors, icons, descriptions) + facet translations
-/public
-  /logo.png                    → Main brand mark (vertical)
-  /logo-horizontal.png         → Secondary brand mark (horizontal)
-  /icon.png                    → Brand symbol only
+middleware.ts
+app/
+  [slug]/
+    page.tsx              ← getMentoraBySlug(params.slug)
+    questionario/
+      page.tsx
+    obrigado/
+      page.tsx
+  _subdomain/
+    [sub]/
+      page.tsx            ← getMentoraBySubdominio(params.sub)
+      questionario/
+        page.tsx
+      obrigado/
+        page.tsx
+  _domain/
+    [host]/
+      page.tsx            ← getMentoraByHost(params.host)
+      questionario/
+        page.tsx
+      obrigado/
+        page.tsx
+components/
+  mentora/
+    LandingPage.tsx       ← recebe mentora: Mentora como prop
+    TesteCliente.tsx
+    ObrigadoPage.tsx
+    MentoraLoader.tsx
+lib/
+  db/
+    client.ts
+    mentoras.ts
+  scoring.ts
+types/
+  mentora.ts
+data/
+  ipip-neo-120-items.json
+db/
+  schema.sql
 ```
 
 ---
 
-## Key UX Decisions
+## Modelo de Dados do Teste (IPIP-NEO-120)
 
-- **One question per page** (mobile-first) or **paginated in blocks of 10–15** — choose based on preference
-- Progress bar always visible
-- No backend required — all state lives in client (React state or localStorage for persistence)
-- Results page shows: radar chart (5 domains), then expandable sections for each domain with its 6 facet bar charts
-- Share/download results as image (optional, stretch goal)
+```typescript
+interface Item {
+  id: number;
+  text: string; // português
+  textEn: string;
+  domain: "N" | "E" | "O" | "A" | "C";
+  facet: string;
+  reverse: boolean;
+}
+```
 
----
+## Scoring (lib/scoring.ts)
 
-## Important Implementation Notes
+1. Resposta raw: 1–5
+2. Reverse: `score = 6 - rawValue`
+3. Faceta: soma de 4 itens (range 4–20)
+4. Domínio: soma de 6 facetas (range 24–120)
+5. Percentil faceta: `((score - 4) / 16) * 100`
+6. Percentil domínio: `((score - 24) / 96) * 100`
+7. Nível: `< 35 → Baixo`, `35–65 → Médio`, `> 65 → Alto`
 
-- All 120 items MUST be answered before scoring (or handle missing with proration)
-- The `reverse` field in the JSON determines scoring direction — do NOT hardcode reverse item IDs
-- Domain colors (defined in `lib/descriptions.ts`, used for data visualization — these are distinct from the brand palette):
-  - N (Neuroticism): `#E74C3C` (red)
-  - E (Extraversion): `#F39C12` (amber)
-  - O (Openness): `#9B59B6` (purple)
-  - A (Agreeableness): `#2ECC71` (green)
-  - C (Conscientiousness): `#3498DB` (blue)
-- All UI chrome (buttons, backgrounds, borders) must use the brand palette, NOT the domain colors. Domain colors are only for chart data points, facet bars, and domain labels.
-- The test is public domain (IPIP) — no license restrictions on the items
-- Reference: Johnson, J. A. (2014). _Journal of Research in Personality, 51_, 78–89.
+## Cores por Domínio
 
----
+| Código | Domínio           | Cor       |
+| ------ | ----------------- | --------- |
+| N      | Neuroticismo      | `#EF4444` |
+| E      | Extroversão       | `#F59E0B` |
+| O      | Abertura          | `#8B5CF6` |
+| A      | Amabilidade       | `#10B981` |
+| C      | Conscienciosidade | `#3B82F6` |
 
-## Translations / Labels (PT)
+## Payload para o n8n
 
-| EN                              | PT                        |
-| ------------------------------- | ------------------------- |
-| Very Inaccurate                 | Muito Impreciso           |
-| Moderately Inaccurate           | Moderadamente Impreciso   |
-| Neither Accurate nor Inaccurate | Nem Preciso nem Impreciso |
-| Moderately Accurate             | Moderadamente Preciso     |
-| Very Accurate                   | Muito Preciso             |
-| Neuroticism                     | Neuroticismo              |
-| Extraversion                    | Extroversão               |
-| Openness to Experience          | Abertura à Experiência    |
-| Agreeableness                   | Amabilidade               |
-| Conscientiousness               | Conscienciosidade         |
-| Low                             | Baixo                     |
-| Average                         | Médio                     |
-| High                            | Alto                      |
+```typescript
+interface ResultadosPayload {
+  mentora: {
+    nome: string;
+    email: string;
+    openaiApiKey: string | null;
+    promptExtra: string | null;
+  };
+  cliente: {
+    nome: string;
+    email: string;
+    idade?: string;
+    profissao?: string;
+  };
+  resultados: Array<{
+    dominio: string;
+    codigo: "N" | "E" | "O" | "A" | "C";
+    percentil: number;
+    pontuacao: number;
+    nivel: "Baixo" | "Médio" | "Alto";
+    facetas: Array<{
+      nome: string;
+      percentil: number;
+      pontuacao: number;
+      nivel: "Baixo" | "Médio" | "Alto";
+    }>;
+  }>;
+}
+```
 
-### Facet Translations
+## Variáveis de Ambiente
 
-| EN                   | PT                    |
-| -------------------- | --------------------- |
-| Anxiety              | Ansiedade             |
-| Anger                | Raiva                 |
-| Depression           | Depressão             |
-| Self-Consciousness   | Autoconsciência       |
-| Immoderation         | Imoderação            |
-| Vulnerability        | Vulnerabilidade       |
-| Friendliness         | Amigabilidade         |
-| Gregariousness       | Gregarismo            |
-| Assertiveness        | Assertividade         |
-| Activity Level       | Nível de Atividade    |
-| Excitement-Seeking   | Busca de Emoções      |
-| Cheerfulness         | Alegria               |
-| Imagination          | Imaginação            |
-| Artistic Interests   | Interesses Artísticos |
-| Emotionality         | Emotividade           |
-| Adventurousness      | Aventureirismo        |
-| Intellect            | Intelecto             |
-| Liberalism           | Liberalismo           |
-| Trust                | Confiança             |
-| Morality             | Moralidade            |
-| Altruism             | Altruísmo             |
-| Cooperation          | Cooperação            |
-| Modesty              | Modéstia              |
-| Sympathy             | Compaixão             |
-| Self-Efficacy        | Autoeficácia          |
-| Orderliness          | Organização           |
-| Dutifulness          | Senso de Dever        |
-| Achievement-Striving | Busca de Realização   |
-| Self-Discipline      | Autodisciplina        |
-| Cautiousness         | Cautela               |
+```env
+DATABASE_URL=postgresql://...
+N8N_WEBHOOK_URL=https://...
+OPENAI_API_KEY=sk-...
+```
+
+## Convenções
+
+- UI totalmente em português
+- snake_case na BD, camelCase no TypeScript
+- Sem CSS modules — só Tailwind
+- Server Components por defeito; Client Components apenas onde há interactividade (teste)
+- `notFound()` para slugs inválidos ou mentoras inativas
+- Sem autenticação — gestão feita directamente na BD

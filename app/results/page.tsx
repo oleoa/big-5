@@ -12,6 +12,7 @@ import Loader from "@/components/Loader";
 const STORAGE_KEY_ANSWERS = "big5-answers";
 const STORAGE_KEY_INDEX = "big5-currentIndex";
 const STORAGE_KEY_PERSONAL = "big5-personal";
+const STORAGE_KEY_CLIENT_ID = "big5-clientId";
 const WEBHOOK_URL = "https://automations.strutura.ai/webhook/big-5";
 
 export default function ThankYouPage() {
@@ -50,7 +51,7 @@ export default function ThankYouPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          clientId: process.env.NEXT_PUBLIC_CLIENT_ID,
+          clientId: localStorage.getItem(STORAGE_KEY_CLIENT_ID) || process.env.NEXT_PUBLIC_CLIENT_ID,
           nome: personalInfo?.name ?? "",
           dadosPessoais: {
             idade: personalInfo?.age ?? "",
@@ -85,6 +86,7 @@ export default function ThankYouPage() {
     localStorage.removeItem(STORAGE_KEY_ANSWERS);
     localStorage.removeItem(STORAGE_KEY_INDEX);
     localStorage.removeItem(STORAGE_KEY_PERSONAL);
+    localStorage.removeItem(STORAGE_KEY_CLIENT_ID);
     setReady(true);
   }, [router]);
 
