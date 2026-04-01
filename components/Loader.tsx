@@ -5,12 +5,12 @@ export default function Loader({ size = 64 }: { size?: number }) {
     <div className="flex flex-col items-center gap-4">
       <Image
         src="/icon.png"
-        alt="A carregar"
+        alt="Carregando"
         width={size}
         height={size}
         className="animate-spin-logo"
       />
-      <span className="text-foreground/40 text-sm">A carregar...</span>
+      <span className="text-foreground/40 text-sm">Carregando...</span>
     </div>
   );
 }

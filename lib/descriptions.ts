@@ -14,10 +14,10 @@ export const DOMAIN_INFO: Record<
     color: "#E74C3C",
     icon: "🌊",
     descriptions: {
-      low: "Tende a ser emocionalmente estável, calmo e capaz de lidar com o stress sem grande dificuldade. Raramente se sente ansioso ou irritado.",
+      low: "Tende a ser emocionalmente estável, calmo e capaz de lidar com o estresse sem grande dificuldade. Raramente se sente ansioso ou irritado.",
       average:
-        "Experiencia emoções negativas ocasionalmente, mas geralmente consegue geri-las de forma adequada. Tem uma resiliência emocional moderada.",
-      high: "Tende a experienciar emoções negativas com frequência, incluindo ansiedade, tristeza e irritabilidade. Pode ser mais sensível ao stress.",
+        "Experimenta emoções negativas ocasionalmente, mas geralmente consegue gerenciá-las de forma adequada. Tem uma resiliência emocional moderada.",
+      high: "Tende a vivenciar emoções negativas com frequência, incluindo ansiedade, tristeza e irritabilidade. Pode ser mais sensível ao estresse.",
     },
   },
   E: {
@@ -27,7 +27,7 @@ export const DOMAIN_INFO: Record<
     descriptions: {
       low: "Prefere ambientes calmos e atividades solitárias. Tende a ser reservado e a precisar de tempo sozinho para recarregar energias.",
       average:
-        "Aprecia tanto a companhia dos outros como momentos de solidão. Consegue adaptar-se a situações sociais variadas com facilidade.",
+        "Aprecia tanto a companhia dos outros como momentos de solidão. Consegue se adaptar a situações sociais variadas com facilidade.",
       high: "É energético, sociável e expressivo. Gosta de estar rodeado de pessoas e tende a ser o centro das atenções em grupo.",
     },
   },
@@ -47,9 +47,9 @@ export const DOMAIN_INFO: Record<
     color: "#2ECC71",
     icon: "🤝",
     descriptions: {
-      low: "Tende a ser mais competitivo e cético. Prioriza os seus próprios interesses e pode ser mais direto nas suas opiniões.",
+      low: "Tende a ser mais competitivo e cético. Prioriza seus próprios interesses e pode ser mais direto em suas opiniões.",
       average:
-        "Geralmente é cooperativo e atencioso, mas sabe defender os seus interesses quando necessário. Equilibra empatia com assertividade.",
+        "Geralmente é cooperativo e atencioso, mas sabe defender seus interesses quando necessário. Equilibra empatia com assertividade.",
       high: "É compassivo, cooperativo e preocupado com o bem-estar dos outros. Tende a confiar nas pessoas e a evitar conflitos.",
     },
   },
@@ -61,7 +61,7 @@ export const DOMAIN_INFO: Record<
       low: "Tende a ser mais flexível e espontâneo. Pode preferir improvisar a seguir planos rígidos e ser menos focado em detalhes.",
       average:
         "Mantém um nível razoável de organização e disciplina. Consegue cumprir objetivos mas também sabe relaxar quando necessário.",
-      high: "É organizado, disciplinado e orientado para objetivos. Planeia com cuidado, é fiável e persiste até concluir as suas tarefas.",
+      high: "É organizado, disciplinado e orientado para objetivos. Planeja com cuidado, é confiável e persiste até concluir suas tarefas.",
     },
   },
 };

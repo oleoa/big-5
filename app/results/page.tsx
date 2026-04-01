@@ -110,7 +110,7 @@ export default function ThankYouPage() {
         />
 
         <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-4">
-          Muito obrigada pelas suas respostas.
+          Muito obrigada por suas respostas.
         </h1>
 
         <p className="text-lg text-foreground/60 mb-10">
@@ -119,7 +119,7 @@ export default function ThankYouPage() {
 
         <Link
           href="/"
-          className="inline-block px-8 py-3 bg-primary text-white rounded-xl font-medium hover:bg-accent transition-colors shadow-md"
+          className="inline-block px-8 py-3 bg-brand-blue text-white rounded-xl font-medium hover:bg-brand transition-colors shadow-md"
         >
           Voltar ao Início
         </Link>

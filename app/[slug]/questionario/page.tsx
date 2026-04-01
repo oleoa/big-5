@@ -10,5 +10,5 @@ export default async function Teste({ params }: Props) {
   const { slug } = await params;
   const mentora = await getMentoraBySlug(slug);
   if (!mentora) notFound();
-  return <TesteCliente mentora={mentora} />;
+  return <TesteCliente mentora={mentora} basePath={`/${slug}`} />;
 }

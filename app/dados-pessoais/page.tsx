@@ -50,7 +50,7 @@ export default function DadosPessoaisPage() {
           Antes de começar
         </h1>
         <p className="text-foreground/60 text-center mb-8">
-          Preencha os seus dados para personalizar a experiência.
+          Preencha seus dados para personalizar a experiência.
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-5">
@@ -68,8 +68,8 @@ export default function DadosPessoaisPage() {
               required
               value={form.name}
               onChange={handleChange}
-              placeholder="O seu nome completo"
-              className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground placeholder:text-foreground/30 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+              placeholder="Seu nome completo"
+              className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground placeholder:text-foreground/30 focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue transition-colors"
             />
           </div>
 
@@ -89,8 +89,8 @@ export default function DadosPessoaisPage() {
               max="120"
               value={form.age}
               onChange={handleChange}
-              placeholder="A sua idade"
-              className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground placeholder:text-foreground/30 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+              placeholder="Sua idade"
+              className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground placeholder:text-foreground/30 focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue transition-colors"
             />
           </div>
 
@@ -109,7 +109,7 @@ export default function DadosPessoaisPage() {
               value={form.email}
               onChange={handleChange}
               placeholder="exemplo@email.com"
-              className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground placeholder:text-foreground/30 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+              className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground placeholder:text-foreground/30 focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue transition-colors"
             />
           </div>
 
@@ -127,8 +127,8 @@ export default function DadosPessoaisPage() {
               required
               value={form.profession}
               onChange={handleChange}
-              placeholder="A sua profissão"
-              className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground placeholder:text-foreground/30 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+              placeholder="Sua profissão"
+              className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground placeholder:text-foreground/30 focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue transition-colors"
             />
           </div>
 
@@ -137,7 +137,7 @@ export default function DadosPessoaisPage() {
               htmlFor="children"
               className="block text-sm font-medium text-foreground/80 mb-1.5"
             >
-              Quantos filhos tem?
+              Quantos filhos você tem?
             </label>
             <input
               id="children"
@@ -149,7 +149,7 @@ export default function DadosPessoaisPage() {
               value={form.children}
               onChange={handleChange}
               placeholder="0"
-              className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground placeholder:text-foreground/30 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+              className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground placeholder:text-foreground/30 focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue transition-colors"
             />
           </div>
 
@@ -160,8 +160,8 @@ export default function DadosPessoaisPage() {
               w-full py-3.5 rounded-xl font-semibold text-white transition-colors shadow-md mt-2
               ${
                 isValid
-                  ? "bg-primary hover:bg-accent cursor-pointer"
-                  : "bg-primary/40 cursor-not-allowed"
+                  ? "bg-brand-blue hover:bg-brand cursor-pointer"
+                  : "bg-brand-blue/40 cursor-not-allowed"
               }
             `}
           >

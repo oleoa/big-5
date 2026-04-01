@@ -140,7 +140,7 @@ export function buildResultsHtml(result: TestResult, personalInfo?: PersonalInfo
   const personalSection = personalInfo ? buildPersonalInfoSection(personalInfo) : "";
   const overviewTable = buildOverviewTable(result.domains);
   const domainSections = result.domains.map(buildDomainSection).join("\n");
-  const formattedDate = new Date(result.completedAt).toLocaleDateString("pt-PT", {
+  const formattedDate = new Date(result.completedAt).toLocaleDateString("pt-BR", {
     day: "2-digit",
     month: "long",
     year: "numeric",
@@ -165,7 +165,7 @@ export function buildResultsHtml(result: TestResult, personalInfo?: PersonalInfo
         <table cellpadding="0" cellspacing="0" border="0" width="640" style="border-collapse:collapse;background:#ffffff;border-bottom:1px solid #d8cfc9;">
           <tr>
             <td align="center" style="padding:32px 16px;">
-              <h1 style="font-size:28px;font-weight:700;color:#2d2d2d;margin:0 0 8px;">Os Seus Resultados</h1>
+              <h1 style="font-size:28px;font-weight:700;color:#2d2d2d;margin:0 0 8px;">Seus Resultados</h1>
               <p style="font-size:14px;color:#9a9a9a;margin:0;">Perfil de personalidade baseado no modelo Big Five (IPIP-NEO-120)</p>
               <p style="font-size:12px;color:#b0b0b0;margin:8px 0 0;">Concluído em ${formattedDate}</p>
             </td>

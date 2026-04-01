@@ -6,5 +6,5 @@ export default async function DomainPage({ params }: { params: Promise<{ host: s
   const { host } = await params;
   const mentora = await getMentoraByHost(decodeURIComponent(host));
   if (!mentora) notFound();
-  return <LandingPage mentora={mentora} />;
+  return <LandingPage mentora={mentora} basePath="" />;
 }

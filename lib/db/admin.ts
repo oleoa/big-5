@@ -1,10 +1,10 @@
 import { pool } from './client';
-import { Mentora } from '@/types/mentora';
+import { Mentora, DnsRegistro } from '@/types/mentora';
 import { verificarDominio } from '@/lib/vercel-domains';
 
 export async function listarMentoras() {
   const { rows } = await pool.query(
-    'SELECT id, slug, nome, email, ativo, criado_em, dominio_custom, dominio_dns_nome, dominio_dns_valor, dominio_verificado FROM mentoras ORDER BY criado_em DESC'
+    'SELECT id, slug, nome, email, ativo, criado_em, dominio_custom, dominio_dns_registros, dominio_verificado FROM mentoras ORDER BY criado_em DESC'
   );
   return rows;
 }
@@ -19,10 +19,8 @@ export async function getMentoraById(id: string): Promise<Mentora | null> {
   return {
     id: row.id,
     slug: row.slug,
-    subdominio: row.subdominio,
     dominioCustom: row.dominio_custom,
-    dominioDnsNome: row.dominio_dns_nome,
-    dominioDnsValor: row.dominio_dns_valor,
+    dominioDnsRegistros: row.dominio_dns_registros ?? [],
     dominioVerificado: row.dominio_verificado ?? false,
     nome: row.nome,
     email: row.email,
@@ -54,10 +52,10 @@ export async function criarMentora(dados: Partial<Mentora>) {
       logo_principal_url, logo_secundaria_url, logo_icone_url,
       titulo_obrigado, texto_obrigado,
       opcoes_resposta, perguntas_extras,
-      subdominio, dominio_custom,
+      dominio_custom,
       openai_api_key, prompt_extra,
-      dominio_dns_nome, dominio_dns_valor, dominio_verificado)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23)
+      dominio_dns_registros, dominio_verificado)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21)
      RETURNING *`,
     [
       dados.slug, dados.nome, dados.email,
@@ -74,12 +72,10 @@ export async function criarMentora(dados: Partial<Mentora>) {
       dados.textoObrigado ?? 'As suas respostas foram enviadas. Receberá a análise em breve.',
       JSON.stringify(dados.opcoesResposta ?? ['Discordo totalmente','Discordo','Neutro','Concordo','Concordo totalmente']),
       JSON.stringify(dados.perguntasExtras ?? []),
-      dados.subdominio ?? null,
       dados.dominioCustom ?? null,
       dados.openaiApiKey ?? null,
       dados.promptExtra ?? null,
-      dados.dominioDnsNome ?? null,
-      dados.dominioDnsValor ?? null,
+      JSON.stringify(dados.dominioDnsRegistros ?? []),
       dados.dominioVerificado ?? false,
     ]
   );
@@ -105,14 +101,12 @@ export async function atualizarMentora(id: string, dados: Partial<Mentora>) {
       texto_obrigado = COALESCE($15, texto_obrigado),
       opcoes_resposta = COALESCE($16, opcoes_resposta),
       perguntas_extras = COALESCE($17, perguntas_extras),
-      subdominio = $18,
-      dominio_custom = $19,
-      openai_api_key = $20,
-      prompt_extra = $21,
-      ativo = COALESCE($22, ativo),
-      dominio_dns_nome = $23,
-      dominio_dns_valor = $24,
-      dominio_verificado = $25,
+      dominio_custom = $18,
+      openai_api_key = $19,
+      prompt_extra = $20,
+      ativo = COALESCE($21, ativo),
+      dominio_dns_registros = $22,
+      dominio_verificado = $23,
       atualizado_em = NOW()
     WHERE id = $1
     RETURNING *`,
@@ -127,44 +121,42 @@ export async function atualizarMentora(id: string, dados: Partial<Mentora>) {
       dados.tituloObrigado, dados.textoObrigado,
       dados.opcoesResposta ? JSON.stringify(dados.opcoesResposta) : null,
       dados.perguntasExtras ? JSON.stringify(dados.perguntasExtras) : null,
-      dados.subdominio ?? null,
       dados.dominioCustom ?? null,
       dados.openaiApiKey ?? null,
       dados.promptExtra ?? null,
       dados.ativo,
-      dados.dominioDnsNome ?? null,
-      dados.dominioDnsValor ?? null,
+      JSON.stringify(dados.dominioDnsRegistros ?? []),
       dados.dominioVerificado ?? false,
     ]
   );
   return rows[0];
 }
 
-export async function atualizarDnsConfig(id: string, config: { dnsNome: string; dnsValor: string; verificado: boolean }) {
+export async function atualizarDnsConfig(id: string, config: { registros: DnsRegistro[]; verificado: boolean }) {
   await pool.query(
     `UPDATE mentoras SET
-      dominio_dns_nome = $2,
-      dominio_dns_valor = $3,
-      dominio_verificado = $4,
+      dominio_dns_registros = $2,
+      dominio_verificado = $3,
       atualizado_em = NOW()
     WHERE id = $1`,
-    [id, config.dnsNome, config.dnsValor, config.verificado]
+    [id, JSON.stringify(config.registros), config.verificado]
   );
 }
 
 export async function verificarTodosDominios() {
   const { rows } = await pool.query(
-    'SELECT id, dominio_custom, dominio_dns_nome, dominio_verificado FROM mentoras WHERE dominio_custom IS NOT NULL'
+    'SELECT id, dominio_custom, dominio_dns_registros, dominio_verificado FROM mentoras WHERE dominio_custom IS NOT NULL'
   );
 
   await Promise.all(
     rows.map(async (row) => {
       try {
         const config = await verificarDominio(row.dominio_custom);
-        if (config.verificado !== row.dominio_verificado || !row.dominio_dns_nome) {
+        const registosAtuais = row.dominio_dns_registros ?? [];
+        const mudou = config.verificado !== row.dominio_verificado || registosAtuais.length === 0;
+        if (mudou) {
           await atualizarDnsConfig(row.id, {
-            dnsNome: config.dnsNome,
-            dnsValor: config.dnsValor,
+            registros: config.registros,
             verificado: config.verificado,
           });
         }

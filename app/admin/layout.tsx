@@ -1,19 +1,21 @@
-import { logoutAction } from './actions';
+import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
+import { Toaster } from '@/components/ui/sonner';
+import { AppSidebar } from '@/components/admin/AppSidebar';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-surface">
-      <nav className="bg-background border-b border-border px-6 py-3 flex justify-between items-center">
-        <a href="/admin" className="font-semibold text-foreground">Strutura AI — Admin</a>
-        <form action={logoutAction}>
-          <button type="submit" className="text-sm text-muted hover:text-foreground cursor-pointer">
-            Sair
-          </button>
-        </form>
-      </nav>
-      <main className="max-w-7xl mx-auto px-6 py-8">
-        {children}
-      </main>
-    </div>
+    <SidebarProvider>
+      <AppSidebar />
+      <SidebarInset>
+        <header className="flex h-14 shrink-0 items-center gap-2 border-b px-4">
+          <SidebarTrigger className="-ml-1" />
+          <span className="text-sm font-medium text-muted-foreground">Mentoras</span>
+        </header>
+        <main className="flex-1 p-6">
+          {children}
+        </main>
+      </SidebarInset>
+      <Toaster richColors position="top-right" />
+    </SidebarProvider>
   );
 }

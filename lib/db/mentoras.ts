@@ -1,14 +1,12 @@
 import { pool } from "./client";
-import { Mentora, PerguntaExtra } from "@/types/mentora";
+import { Mentora, PerguntaExtra, DnsRegistro } from "@/types/mentora";
 
 function mapRow(row: Record<string, unknown>): Mentora {
   return {
     id: row.id as string,
     slug: row.slug as string,
-    subdominio: row.subdominio as string | null,
     dominioCustom: row.dominio_custom as string | null,
-    dominioDnsNome: row.dominio_dns_nome as string | null,
-    dominioDnsValor: row.dominio_dns_valor as string | null,
+    dominioDnsRegistros: (row.dominio_dns_registros as DnsRegistro[]) ?? [],
     dominioVerificado: (row.dominio_verificado as boolean) ?? false,
     nome: row.nome as string,
     email: row.email as string,
@@ -47,21 +45,10 @@ export async function getMentoraBySlug(slug: string): Promise<Mentora | null> {
   return rows[0] ? mapRow(rows[0]) : null;
 }
 
-export async function getMentoraBySubdominio(
-  sub: string,
-): Promise<Mentora | null> {
-  const { rows } = await pool.query(
-    "SELECT * FROM mentoras WHERE subdominio = $1 AND ativo = TRUE LIMIT 1",
-    [sub],
-  );
-  return rows[0] ? mapRow(rows[0]) : null;
-}
-
 export async function getMentoraByHost(host: string): Promise<Mentora | null> {
   const { rows } = await pool.query(
     "SELECT * FROM mentoras WHERE dominio_custom = $1 AND ativo = TRUE LIMIT 1",
     [host],
   );
-  console.log("ROWS", rows);
   return rows[0] ? mapRow(rows[0]) : null;
 }

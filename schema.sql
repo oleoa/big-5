@@ -7,8 +7,9 @@ CREATE TABLE mentoras (
 
   -- Identidade e acesso
   slug                TEXT    UNIQUE NOT NULL,
-  subdominio          TEXT    UNIQUE,
   dominio_custom      TEXT    UNIQUE,
+  dominio_dns_registros JSONB NOT NULL DEFAULT '[]'::jsonb,
+  dominio_verificado  BOOLEAN NOT NULL DEFAULT FALSE,
 
   -- Informação da mentora
   nome                TEXT    NOT NULL,
@@ -48,7 +49,6 @@ CREATE TABLE mentoras (
 
 -- Índices
 CREATE INDEX idx_mentoras_slug           ON mentoras (slug);
-CREATE INDEX idx_mentoras_subdominio     ON mentoras (subdominio);
 CREATE INDEX idx_mentoras_dominio_custom ON mentoras (dominio_custom);
 
 -- Trigger para atualizado_em automático

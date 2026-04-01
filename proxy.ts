@@ -20,14 +20,7 @@ export function proxy(req: NextRequest) {
     }
   }
 
-  if (hostname.endsWith(`.${ROOT_DOMAIN}`)) {
-    const subdomain = hostname.replace(`.${ROOT_DOMAIN}`, "");
-    const url = req.nextUrl.clone();
-    url.pathname = `/s/${subdomain}${pathname}`;
-    return NextResponse.rewrite(url);
-  }
-
-  if (PLATFORM_HOSTS.has(hostname)) {
+  if (PLATFORM_HOSTS.has(hostname) || hostname.endsWith(`.${ROOT_DOMAIN}`)) {
     return NextResponse.next();
   }
 

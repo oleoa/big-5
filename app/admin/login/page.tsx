@@ -2,39 +2,43 @@
 
 import { useActionState } from 'react';
 import { loginAction } from '../actions';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Loader2 } from 'lucide-react';
 
 export default function LoginPage() {
   const [state, formAction, pending] = useActionState(loginAction, null);
 
   return (
-    <div className="min-h-screen bg-surface flex items-center justify-center px-4">
-      <div className="bg-background rounded-lg shadow-md p-8 w-full max-w-sm">
-        <h1 className="text-xl font-semibold text-foreground text-center mb-6">
-          Strutura AI — Admin
-        </h1>
-        <form action={formAction}>
-          <label htmlFor="senha" className="block text-sm font-medium text-foreground mb-1">
-            Senha
-          </label>
-          <input
-            id="senha"
-            name="senha"
-            type="password"
-            required
-            className="w-full border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent"
-          />
-          {state?.erro && (
-            <p className="text-red-600 text-sm mt-2">{state.erro}</p>
-          )}
-          <button
-            type="submit"
-            disabled={pending}
-            className="mt-4 w-full bg-accent text-foreground rounded-md py-2 text-sm font-medium hover:bg-accent-hover disabled:opacity-50 cursor-pointer"
-          >
-            {pending ? 'A entrar...' : 'Entrar'}
-          </button>
-        </form>
-      </div>
+    <div className="min-h-screen bg-muted flex items-center justify-center px-4">
+      <Card className="w-full max-w-sm">
+        <CardHeader className="text-center">
+          <CardTitle className="text-xl">Strutura AI — Admin</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form action={formAction} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="senha">Senha</Label>
+              <Input
+                id="senha"
+                name="senha"
+                type="password"
+                required
+                placeholder="Digite a senha"
+              />
+            </div>
+            {state?.erro && (
+              <p className="text-destructive text-sm">{state.erro}</p>
+            )}
+            <Button type="submit" disabled={pending} className="w-full">
+              {pending && <Loader2 className="size-4 animate-spin mr-2" />}
+              {pending ? 'Entrando...' : 'Entrar'}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 }

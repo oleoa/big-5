@@ -5,10 +5,16 @@ import { useRouter } from "next/navigation";
 import { Mentora } from "@/types/mentora";
 import items from "@/data/ipip-neo-120-items.json";
 import PhoneInput, { isValidPhone } from "@/components/mentora/PhoneInput";
+import MentoraLayout from "./MentoraLayout";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
 
 type Fase = "dados" | "teste" | "enviando";
 
-export default function TesteCliente({ mentora }: { mentora: Mentora }) {
+export default function TesteCliente({ mentora, basePath }: { mentora: Mentora; basePath: string }) {
   const router = useRouter();
   const [fase, setFase] = useState<Fase>("dados");
   const [dados, setDados] = useState<Record<string, string>>({
@@ -19,8 +25,6 @@ export default function TesteCliente({ mentora }: { mentora: Mentora }) {
   const [perguntaAtual, setPerguntaAtual] = useState(0);
   const [respostas, setRespostas] = useState<Record<number, number>>({});
   const [erro, setErro] = useState("");
-
-  const cor = mentora.corPrimaria;
 
   const iniciarTeste = useCallback(() => {
     if (!dados.nome.trim() || !dados.email.trim()) {
@@ -66,7 +70,7 @@ export default function TesteCliente({ mentora }: { mentora: Mentora }) {
             }),
           });
           if (res.ok) {
-            router.push(`/${mentora.slug}/obrigado`);
+            router.push(`${basePath}/obrigado`);
           } else {
             setErro("Ocorreu um erro ao enviar. Tente novamente.");
             setFase("teste");
@@ -77,7 +81,7 @@ export default function TesteCliente({ mentora }: { mentora: Mentora }) {
         }
       }
     },
-    [perguntaAtual, respostas, mentora.slug, dados, router]
+    [perguntaAtual, respostas, mentora.slug, dados, router, basePath]
   );
 
   const anterior = useCallback(() => {
@@ -89,107 +93,102 @@ export default function TesteCliente({ mentora }: { mentora: Mentora }) {
   // --- Formulário de dados pessoais ---
   if (fase === "dados") {
     return (
-      <main className="min-h-screen flex items-center justify-center p-6" style={{ backgroundColor: mentora.corFundo, color: mentora.corTexto }}>
-        <div className="w-full max-w-md">
-          {mentora.logoSecundariaUrl && (
-            <img
-              src={mentora.logoSecundariaUrl}
-              alt={mentora.nome}
-              className="h-32 mx-auto mb-6 object-contain"
-            />
-          )}
+      <MentoraLayout mentora={mentora}>
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center pb-0">
+            {mentora.logoSecundariaUrl && (
+              <img
+                src={mentora.logoSecundariaUrl}
+                alt={mentora.nome}
+                className="h-32 mx-auto mb-2 object-contain"
+              />
+            )}
+            <CardTitle className="text-2xl font-semibold">
+              Antes de começar
+            </CardTitle>
+            <CardDescription>
+              Preencha seus dados para iniciar o teste.
+            </CardDescription>
+          </CardHeader>
 
-          <h1 className="text-2xl font-semibold mb-2 text-center">
-            Antes de começar
-          </h1>
-          <p className="text-center mb-8" style={{ opacity: 0.6 }}>
-            Preencha os seus dados para iniciar o teste.
-          </p>
+          <CardContent className="space-y-4">
+            {erro && (
+              <div className="rounded-lg border border-destructive/50 bg-destructive/10 text-destructive p-3 text-sm">
+                {erro}
+              </div>
+            )}
 
-          {erro && (
-            <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-lg text-sm">
-              {erro}
-            </div>
-          )}
-
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Nome completo *
-              </label>
-              <input
+            <div className="space-y-2">
+              <Label htmlFor="nome">Nome completo *</Label>
+              <Input
+                id="nome"
                 type="text"
                 value={dados.nome}
                 onChange={(e) => setDados(prev => ({ ...prev, nome: e.target.value }))}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50"
-                style={{ focusRingColor: cor } as React.CSSProperties}
-                placeholder="O seu nome"
+                className="h-11"
+                placeholder="Seu nome"
                 required
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Email *
-              </label>
-              <input
+            <div className="space-y-2">
+              <Label htmlFor="email">Email *</Label>
+              <Input
+                id="email"
                 type="email"
                 value={dados.email}
                 onChange={(e) => setDados(prev => ({ ...prev, email: e.target.value }))}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50"
-                placeholder="o-seu@email.com"
+                className="h-11"
+                placeholder="seu@email.com"
                 required
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Celular *
-              </label>
+            <div className="space-y-2">
+              <Label>Celular *</Label>
               <PhoneInput
                 value={dados.celular}
                 onChange={(val) => setDados(prev => ({ ...prev, celular: val }))}
-                corFundo={mentora.corFundo}
               />
             </div>
 
             {[...mentora.perguntasExtras].sort((a, b) => (a.ordem ?? 0) - (b.ordem ?? 0)).map((pergunta) => (
-              <div key={pergunta.id}>
-                <label className="block text-sm font-medium mb-1">
-                  {pergunta.label}{pergunta.obrigatorio ? ' *' : ''}
-                </label>
-                {pergunta.tipo === 'textarea' ? (
-                  <textarea
-                    value={dados[pergunta.id] ?? ''}
+              <div key={pergunta.id} className="space-y-2">
+                <Label htmlFor={pergunta.id}>
+                  {pergunta.label}{pergunta.obrigatorio ? " *" : ""}
+                </Label>
+                {pergunta.tipo === "textarea" ? (
+                  <Textarea
+                    id={pergunta.id}
+                    value={dados[pergunta.id] ?? ""}
                     onChange={(e) => setDados(prev => ({ ...prev, [pergunta.id]: e.target.value }))}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50"
-                    placeholder={pergunta.placeholder || (pergunta.obrigatorio ? '' : 'Opcional')}
+                    placeholder={pergunta.placeholder || (pergunta.obrigatorio ? "" : "Opcional")}
                     required={pergunta.obrigatorio}
                     rows={3}
                   />
                 ) : (
-                  <input
+                  <Input
+                    id={pergunta.id}
                     type={pergunta.tipo}
-                    value={dados[pergunta.id] ?? ''}
+                    value={dados[pergunta.id] ?? ""}
                     onChange={(e) => setDados(prev => ({ ...prev, [pergunta.id]: e.target.value }))}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50"
-                    placeholder={pergunta.placeholder || (pergunta.obrigatorio ? '' : 'Opcional')}
+                    className="h-11"
+                    placeholder={pergunta.placeholder || (pergunta.obrigatorio ? "" : "Opcional")}
                     required={pergunta.obrigatorio}
                   />
                 )}
               </div>
             ))}
-          </div>
 
-          <button
-            onClick={iniciarTeste}
-            className="mt-8 px-8 py-4 text-white font-medium rounded-lg transition-opacity hover:opacity-90 mx-auto block"
-            style={{ backgroundColor: cor }}
-          >
-            Iniciar teste →
-          </button>
-        </div>
-      </main>
+            <Button
+              onClick={iniciarTeste}
+              className="w-full h-12 text-base mt-2"
+            >
+              Iniciar teste →
+            </Button>
+          </CardContent>
+        </Card>
+      </MentoraLayout>
     );
   }
 
@@ -197,14 +196,15 @@ export default function TesteCliente({ mentora }: { mentora: Mentora }) {
   const item = items[perguntaAtual];
   const progresso = ((perguntaAtual + 1) / items.length) * 100;
   const respostaAtual = respostas[item.id];
+  const enviando = fase === "enviando";
 
   return (
-    <main className="min-h-screen flex flex-col" style={{ backgroundColor: mentora.corFundo, color: mentora.corTexto }}>
-      {/* Barra de progresso */}
-      <div className="w-full" style={{ backgroundColor: mentora.corFundo }}>
+    <MentoraLayout mentora={mentora} variant="full" className="p-0">
+      {/* Progress bar */}
+      <div className="w-full bg-muted">
         <div
-          className="h-1.5 transition-all duration-300 ease-out"
-          style={{ width: `${progresso}%`, backgroundColor: cor }}
+          className="h-2 rounded-r-full bg-primary transition-all duration-300 ease-out"
+          style={{ width: `${progresso}%` }}
         />
       </div>
 
@@ -215,89 +215,67 @@ export default function TesteCliente({ mentora }: { mentora: Mentora }) {
             <img
               src={mentora.logoSecundariaUrl}
               alt={mentora.nome}
-              className="h-32 mx-auto mb-4 object-contain"
+              className="h-24 mx-auto mb-4 object-contain"
             />
           )}
 
-          {/* Contador */}
-          <p className="text-sm mb-2 text-center" style={{ opacity: 0.5 }}>
-            Pergunta {perguntaAtual + 1} de {items.length}
+          {/* Counter */}
+          <p className="text-sm mb-4 text-center text-muted-foreground">
+            Pergunta {perguntaAtual + 1} de {items.length} ({Math.round(progresso)}%)
           </p>
 
-          {/* Pergunta */}
-          <div
-            key={item.id}
-            className="animate-fade-in"
-          >
-            <h2 className="text-xl font-medium text-center mb-10">
-              {item.text}
-            </h2>
+          <Card>
+            <CardContent className="pt-6 pb-6">
+              {/* Question */}
+              <div key={item.id} className="animate-fade-in">
+                <h2 className="text-xl font-medium text-center mb-8">
+                  {item.text}
+                </h2>
 
-            {/* Opções */}
-            <div className="space-y-3">
-              {mentora.opcoesResposta.map((label, i) => {
-                const valor = i + 1;
-                const selecionada = respostaAtual === valor;
-                const enviando = fase === "enviando";
-                return (
-                  <button
-                    key={i}
-                    onClick={() => responder(valor)}
-                    disabled={enviando}
-                    className="w-full py-4 px-6 rounded-lg border-2 text-left font-medium transition-all duration-150 flex items-center justify-between disabled:opacity-60 disabled:cursor-not-allowed"
-                    style={
-                      selecionada
-                        ? {
-                            backgroundColor: cor,
-                            borderColor: cor,
-                            color: "white",
-                          }
-                        : {
-                            borderColor: "#e5e7eb",
-                          }
-                    }
-                    onMouseEnter={(e) => {
-                      if (!selecionada && !enviando) {
-                        e.currentTarget.style.backgroundColor = cor + "15";
-                        e.currentTarget.style.borderColor = cor;
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (!selecionada && !enviando) {
-                        e.currentTarget.style.backgroundColor = "";
-                        e.currentTarget.style.borderColor = "#e5e7eb";
-                      }
-                    }}
-                  >
-                    {label}
-                    {enviando && selecionada && (
-                      <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-white border-r-transparent" />
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+                {/* Options */}
+                <div className="space-y-3">
+                  {mentora.opcoesResposta.map((label, i) => {
+                    const valor = i + 1;
+                    const selecionada = respostaAtual === valor;
+                    return (
+                      <Button
+                        key={i}
+                        onClick={() => responder(valor)}
+                        disabled={enviando}
+                        variant={selecionada ? "default" : "outline"}
+                        className="w-full h-auto py-4 px-6 justify-start text-left font-medium"
+                      >
+                        {label}
+                        {enviando && selecionada && (
+                          <span className="ml-auto inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent" />
+                        )}
+                      </Button>
+                    );
+                  })}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-          {/* Botão anterior */}
-          <div className="mt-8 text-center">
-            <button
+          {/* Previous button */}
+          <div className="mt-6 text-center">
+            <Button
               onClick={anterior}
               disabled={perguntaAtual === 0}
-              className="text-sm disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-              style={{ opacity: 0.5 }}
+              variant="ghost"
+              size="sm"
             >
               ← Anterior
-            </button>
+            </Button>
           </div>
 
           {erro && (
-            <div className="mt-4 p-3 bg-red-50 text-red-600 rounded-lg text-sm text-center">
+            <div className="mt-4 rounded-lg border border-destructive/50 bg-destructive/10 text-destructive p-3 text-sm text-center">
               {erro}
             </div>
           )}
         </div>
       </div>
-    </main>
+    </MentoraLayout>
   );
 }

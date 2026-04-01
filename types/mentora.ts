@@ -8,13 +8,17 @@ export interface PerguntaExtra {
   payload?: string;
 }
 
+export interface DnsRegistro {
+  type: 'CNAME' | 'A' | 'TXT';
+  name: string;
+  value: string;
+}
+
 export interface Mentora {
   id: string;
   slug: string;
-  subdominio: string | null;
   dominioCustom: string | null;
-  dominioDnsNome: string | null;
-  dominioDnsValor: string | null;
+  dominioDnsRegistros: DnsRegistro[];
   dominioVerificado: boolean;
   nome: string;
   email: string;

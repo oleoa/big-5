@@ -49,8 +49,8 @@ export default function QuestionCard({
                 transition-all duration-200 cursor-pointer
                 ${
                   isSelected
-                    ? "border-primary bg-primary/10 text-primary shadow-md"
-                    : "border-border bg-surface text-foreground/70 hover:border-primary-light hover:bg-background shadow-sm"
+                    ? "border-brand-blue bg-brand-blue/10 text-brand-blue shadow-md"
+                    : "border-border bg-surface text-foreground/70 hover:border-brand-blue-light hover:bg-background shadow-sm"
                 }
               `}
               aria-label={`${label} - ${value} de 5`}
@@ -61,7 +61,7 @@ export default function QuestionCard({
                   text-sm font-bold transition-all duration-200
                   ${
                     isSelected
-                      ? "bg-primary text-white"
+                      ? "bg-brand-blue text-white"
                       : "bg-background text-foreground/50"
                   }
                 `}

@@ -43,7 +43,7 @@ export default function DevRandomButton() {
     <div className="fixed bottom-4 right-4 flex gap-2 z-50">
       <button
         onClick={handleClick}
-        className="bg-primary text-white px-3 py-2 rounded-lg text-sm shadow-lg hover:bg-accent transition-colors"
+        className="bg-brand-blue text-white px-3 py-2 rounded-lg text-sm shadow-lg hover:bg-brand transition-colors"
       >
         Dev: Preencher Aleatório
       </button>

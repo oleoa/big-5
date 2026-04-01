@@ -5,11 +5,20 @@ import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
 import { criarMentora, atualizarMentora, toggleAtivoMentora, getMentoraById, atualizarDnsConfig } from '@/lib/db/admin';
 import { adicionarDominio, removerDominio, verificarDominio } from '@/lib/vercel-domains';
+import { validarChaveOpenAI, notificarWebhookCriacao } from '@/lib/openai';
+import type { DnsRegistro } from '@/types/mentora';
+
+export type ActionResult = {
+  sucesso: boolean;
+  erro?: string;
+};
+
+// ── Auth actions (keep redirects) ──────────────────────────────
 
 export async function loginAction(_prevState: { erro: string } | null, formData: FormData) {
   const senha = formData.get('senha') as string;
   if (senha !== process.env.ADMIN_PASSWORD) {
-    return { erro: 'Senha incorrecta' };
+    return { erro: 'Senha incorreta' };
   }
   const cookieStore = await cookies();
   cookieStore.set('admin_session', process.env.ADMIN_SESSION_SECRET!, {
@@ -28,80 +37,128 @@ export async function logoutAction() {
   redirect('/admin/login');
 }
 
-export async function criarMentoraAction(formData: FormData) {
-  const dados = extrairDadosFormulario(formData);
+// ── Fetch single mentora (for Sheet) ───────────────────────────
 
-  if (dados.dominioCustom) {
-    const resultado = await adicionarDominio(dados.dominioCustom);
-    if (resultado.sucesso) {
-      dados.dominioDnsNome = resultado.dnsNome ?? null;
-      dados.dominioDnsValor = resultado.dnsValor ?? null;
-      dados.dominioVerificado = false;
-    }
-  }
-
-  await criarMentora(dados);
-  revalidatePath('/admin');
-  redirect('/admin');
+export async function getMentoraAction(id: string): Promise<import('@/types/mentora').Mentora | null> {
+  return getMentoraById(id);
 }
 
-export async function atualizarMentoraAction(id: string, formData: FormData) {
-  const dados = extrairDadosFormulario(formData);
+// ── CRUD actions (return ActionResult, no redirect) ────────────
 
-  const mentoraAtual = await getMentoraById(id);
-  const dominioAntigo = mentoraAtual?.dominioCustom ?? null;
-  const dominioNovo = dados.dominioCustom;
+export async function criarMentoraAction(
+  _prevState: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  try {
+    const dados = extrairDadosFormulario(formData);
 
-  // Inicializar campos DNS
-  dados.dominioDnsNome = null;
-  dados.dominioDnsValor = null;
-  dados.dominioVerificado = false;
-
-  if (dominioAntigo !== dominioNovo) {
-    // Remover domínio antigo da Vercel
-    if (dominioAntigo) {
-      await removerDominio(dominioAntigo);
+    if (dados.openaiApiKey) {
+      const chaveValida = await validarChaveOpenAI(dados.openaiApiKey);
+      if (!chaveValida) return { sucesso: false, erro: 'Chave OpenAI inválida' };
     }
-    // Adicionar novo domínio
-    if (dominioNovo) {
-      const resultado = await adicionarDominio(dominioNovo);
+
+    if (dados.dominioCustom) {
+      const resultado = await adicionarDominio(dados.dominioCustom);
       if (resultado.sucesso) {
-        dados.dominioDnsNome = resultado.dnsNome ?? null;
-        dados.dominioDnsValor = resultado.dnsValor ?? null;
+        dados.dominioDnsRegistros = resultado.registros;
+        dados.dominioVerificado = resultado.verificado;
       }
     }
-  } else if (dominioNovo && mentoraAtual) {
-    // Domínio não mudou — preservar DNS existente
-    dados.dominioDnsNome = mentoraAtual.dominioDnsNome;
-    dados.dominioDnsValor = mentoraAtual.dominioDnsValor;
-    dados.dominioVerificado = mentoraAtual.dominioVerificado;
+
+    const row = await criarMentora(dados);
+
+    if (dados.openaiApiKey) {
+      await notificarWebhookCriacao(row.id);
+    }
+
+    revalidatePath('/admin');
+    return { sucesso: true };
+  } catch (e) {
+    return { sucesso: false, erro: e instanceof Error ? e.message : 'Erro ao criar mentora' };
   }
-
-  await atualizarMentora(id, dados);
-  revalidatePath('/admin');
-  revalidatePath(`/admin/mentoras/${id}`);
-  redirect('/admin');
 }
 
-export async function verificarDominioAction(id: string) {
-  const mentora = await getMentoraById(id);
-  if (!mentora?.dominioCustom) return;
+export async function atualizarMentoraAction(
+  _prevState: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  try {
+    const id = formData.get('id') as string;
+    if (!id) return { sucesso: false, erro: 'ID em falta' };
 
-  const config = await verificarDominio(mentora.dominioCustom);
-  await atualizarDnsConfig(id, {
-    dnsNome: config.dnsNome,
-    dnsValor: config.dnsValor,
-    verificado: config.verificado,
-  });
+    const dados = extrairDadosFormulario(formData);
 
-  revalidatePath('/admin');
-  revalidatePath(`/admin/mentoras/${id}`);
+    const mentoraAtual = await getMentoraById(id);
+    const dominioAntigo = mentoraAtual?.dominioCustom ?? null;
+    const dominioNovo = dados.dominioCustom;
+    const chaveMudou = dados.openaiApiKey && dados.openaiApiKey !== mentoraAtual?.openaiApiKey;
+
+    if (chaveMudou) {
+      const chaveValida = await validarChaveOpenAI(dados.openaiApiKey!);
+      if (!chaveValida) return { sucesso: false, erro: 'Chave OpenAI inválida' };
+    }
+
+    dados.dominioDnsRegistros = [];
+    dados.dominioVerificado = false;
+
+    if (dominioAntigo !== dominioNovo) {
+      if (dominioAntigo) {
+        await removerDominio(dominioAntigo);
+      }
+      if (dominioNovo) {
+        const resultado = await adicionarDominio(dominioNovo);
+        if (resultado.sucesso) {
+          dados.dominioDnsRegistros = resultado.registros;
+          dados.dominioVerificado = resultado.verificado;
+        }
+      }
+    } else if (dominioNovo && mentoraAtual) {
+      dados.dominioDnsRegistros = mentoraAtual.dominioDnsRegistros;
+      dados.dominioVerificado = mentoraAtual.dominioVerificado;
+    }
+
+    await atualizarMentora(id, dados);
+
+    if (chaveMudou) {
+      await notificarWebhookCriacao(id);
+    }
+
+    revalidatePath('/admin');
+    return { sucesso: true };
+  } catch (e) {
+    return { sucesso: false, erro: e instanceof Error ? e.message : 'Erro ao atualizar mentora' };
+  }
 }
 
-export async function toggleAtivoAction(id: string, ativo: boolean) {
-  await toggleAtivoMentora(id, ativo);
-  revalidatePath('/admin');
+export async function verificarDominioAction(id: string): Promise<ActionResult> {
+  try {
+    const mentora = await getMentoraById(id);
+    if (!mentora?.dominioCustom) return { sucesso: false, erro: 'Sem domínio custom' };
+
+    const config = await verificarDominio(mentora.dominioCustom);
+    await atualizarDnsConfig(id, {
+      registros: config.registros,
+      verificado: config.verificado,
+    });
+
+    revalidatePath('/admin');
+    return { sucesso: true };
+  } catch (e) {
+    return { sucesso: false, erro: e instanceof Error ? e.message : 'Erro ao verificar domínio' };
+  }
 }
+
+export async function toggleAtivoAction(id: string, ativo: boolean): Promise<ActionResult> {
+  try {
+    await toggleAtivoMentora(id, ativo);
+    revalidatePath('/admin');
+    return { sucesso: true };
+  } catch (e) {
+    return { sucesso: false, erro: e instanceof Error ? e.message : 'Erro ao alterar estado' };
+  }
+}
+
+// ── Helper ─────────────────────────────────────────────────────
 
 function extrairDadosFormulario(formData: FormData) {
   let perguntasExtras = [];
@@ -126,10 +183,8 @@ function extrairDadosFormulario(formData: FormData) {
     textoObrigado: formData.get('texto_obrigado') as string,
     opcoesResposta,
     perguntasExtras,
-    subdominio: (formData.get('subdominio') as string) || null,
     dominioCustom: (formData.get('dominio_custom') as string) || null,
-    dominioDnsNome: null as string | null,
-    dominioDnsValor: null as string | null,
+    dominioDnsRegistros: [] as DnsRegistro[],
     dominioVerificado: false,
     openaiApiKey: (formData.get('openai_api_key') as string) || null,
     promptExtra: (formData.get('prompt_extra') as string) || null,

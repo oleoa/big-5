@@ -3,7 +3,7 @@
 ## Visão Geral
 
 Plataforma multi-tenant de testes de personalidade Big Five (IPIP-NEO-120).
-Cada mentora tem a sua própria página personalizada acessível de três formas diferentes.
+Cada mentora tem a sua própria página personalizada acessível de duas formas diferentes.
 **Não há autenticação de mentoras** — toda a gestão é feita directamente na base de dados pelo administrador.
 
 ---
@@ -20,12 +20,11 @@ Cada mentora tem a sua própria página personalizada acessível de três formas
 
 ---
 
-## Três formas de aceder à página de uma mentora
+## Duas formas de aceder à página de uma mentora
 
 | URL                                   | Como funciona                                                |
 | ------------------------------------- | ------------------------------------------------------------ |
 | `bigfive.strutura.ai/valquiria-abreu` | Rota dinâmica `[slug]` — sempre disponível                   |
-| `valquiria.bigfive.strutura.ai`       | Wildcard DNS → proxy resolve pelo campo `subdominio`         |
 | `bigfive.valquiriaabreu.com`          | CNAME da mentora → proxy resolve pelo campo `dominio_custom` |
 
 O `proxy.ts` intercepta o `Host` header e faz rewrite interno para a rota correcta. O utilizador nunca vê o URL mudar.
@@ -40,8 +39,9 @@ CREATE TABLE mentoras (
 
   -- Identidade e acesso
   slug                TEXT    UNIQUE NOT NULL,
-  subdominio          TEXT    UNIQUE,
   dominio_custom      TEXT    UNIQUE,
+  dominio_dns_registros JSONB NOT NULL DEFAULT '[]'::jsonb,
+  dominio_verificado  BOOLEAN NOT NULL DEFAULT FALSE,
 
   -- Informação da mentora
   nome                TEXT    NOT NULL,
@@ -102,11 +102,18 @@ export interface PerguntaExtra {
   payload?: string; // chave enviada ao webhook/IA; se vazio, usa o id
 }
 
+export interface DnsRegistro {
+  type: 'CNAME' | 'A' | 'TXT';
+  name: string;
+  value: string;
+}
+
 export interface Mentora {
   id: string;
   slug: string;
-  subdominio: string | null;
   dominioCustom: string | null;
+  dominioDnsRegistros: DnsRegistro[];
+  dominioVerificado: boolean;
   nome: string;
   email: string;
   logoPrincipalUrl: string | null;
@@ -136,68 +143,23 @@ export interface Mentora {
 
 ```typescript
 import { pool } from "./client";
-import { Mentora, PerguntaExtra } from "@/types/mentora";
+import { Mentora, PerguntaExtra, DnsRegistro } from "@/types/mentora";
 
 function mapRow(row: Record<string, unknown>): Mentora {
   return {
     id: row.id as string,
     slug: row.slug as string,
-    subdominio: row.subdominio as string | null,
     dominioCustom: row.dominio_custom as string | null,
+    dominioDnsRegistros: (row.dominio_dns_registros as DnsRegistro[]) ?? [],
+    dominioVerificado: (row.dominio_verificado as boolean) ?? false,
     nome: row.nome as string,
     email: row.email as string,
-    logoPrincipalUrl: row.logo_principal_url as string | null,
-    logoSecundariaUrl: row.logo_secundaria_url as string | null,
-    logoIconeUrl: row.logo_icone_url as string | null,
-    corPrimaria: row.cor_primaria as string,
-    corFundo: row.cor_fundo as string,
-    corTexto: row.cor_texto as string,
-    titulo: row.titulo as string,
-    subtitulo: row.subtitulo as string,
-    textoBotao: row.texto_botao as string,
-    perguntasExtras: row.perguntas_extras as PerguntaExtra[],
-    opcoesResposta: row.opcoes_resposta as [
-      string,
-      string,
-      string,
-      string,
-      string,
-    ],
-    tituloObrigado: row.titulo_obrigado as string,
-    textoObrigado: row.texto_obrigado as string,
-    openaiApiKey: row.openai_api_key as string | null,
-    promptExtra: row.prompt_extra as string | null,
-    ativo: row.ativo as boolean,
-    criadoEm: row.criado_em as Date,
-    atualizadoEm: row.atualizado_em as Date,
+    // ... restantes campos
   };
 }
 
-export async function getMentoraBySlug(slug: string): Promise<Mentora | null> {
-  const { rows } = await pool.query(
-    "SELECT * FROM mentoras WHERE slug = $1 AND ativo = TRUE LIMIT 1",
-    [slug],
-  );
-  return rows[0] ? mapRow(rows[0]) : null;
-}
-
-export async function getMentoraBySubdominio(
-  sub: string,
-): Promise<Mentora | null> {
-  const { rows } = await pool.query(
-    "SELECT * FROM mentoras WHERE subdominio = $1 AND ativo = TRUE LIMIT 1",
-    [sub],
-  );
-  return rows[0] ? mapRow(rows[0]) : null;
-}
-
-export async function getMentoraByHost(host: string): Promise<Mentora | null> {
-  const { rows } = await pool.query(
-    "SELECT * FROM mentoras WHERE dominio_custom = $1 AND ativo = TRUE LIMIT 1",
-    [host],
-  );
-  return rows[0] ? mapRow(rows[0]) : null;
-}
+export async function getMentoraBySlug(slug: string): Promise<Mentora | null> { ... }
+export async function getMentoraByHost(host: string): Promise<Mentora | null> { ... }
 ```
 
 ---
@@ -219,22 +181,22 @@ export function proxy(req: NextRequest) {
     return NextResponse.next();
   }
 
-  // Subdomínio da plataforma → /_subdomain/[sub]/...
-  if (hostname.endsWith(`.${ROOT_DOMAIN}`)) {
-    const subdomain = hostname.replace(`.${ROOT_DOMAIN}`, "");
-    const url = req.nextUrl.clone();
-    url.pathname = `/_subdomain/${subdomain}${pathname}`;
-    return NextResponse.rewrite(url);
+  // Proteger rotas /admin
+  if (pathname.startsWith("/admin") && pathname !== "/admin/login") {
+    const session = req.cookies.get("admin_session");
+    if (session?.value !== process.env.ADMIN_SESSION_SECRET) {
+      return NextResponse.redirect(new URL("/admin/login", req.url));
+    }
   }
 
-  // Domínio raiz → rotas normais [slug]
-  if (PLATFORM_HOSTS.has(hostname)) {
+  // Domínio raiz ou subdomínios da plataforma → rotas normais [slug]
+  if (PLATFORM_HOSTS.has(hostname) || hostname.endsWith(`.${ROOT_DOMAIN}`)) {
     return NextResponse.next();
   }
 
-  // Domínio custom da mentora → /_domain/[host]/...
+  // Domínio custom da mentora → /d/[host]/...
   const url = req.nextUrl.clone();
-  url.pathname = `/_domain/${hostname}${pathname}`;
+  url.pathname = `/d/${hostname}${pathname}`;
   return NextResponse.rewrite(url);
 }
 
@@ -255,12 +217,7 @@ app/
     page.tsx                        ← getMentoraBySlug
     questionario/page.tsx
     obrigado/page.tsx
-  _subdomain/
-    [sub]/
-      page.tsx                      ← getMentoraBySubdominio
-      questionario/page.tsx
-      obrigado/page.tsx
-  _domain/
+  d/
     [host]/
       page.tsx                      ← getMentoraByHost
       questionario/page.tsx
@@ -387,6 +344,9 @@ Se `perguntasExtras` for `[]`, o formulário mostra apenas nome e email.
 DATABASE_URL=postgresql://...
 N8N_WEBHOOK_URL=https://...
 OPENAI_API_KEY=sk-...
+VERCEL_TOKEN=...                  # Token de API do Vercel
+VERCEL_PROJECT_NAME=...           # Nome do projeto no Vercel
+VERCEL_TEAM_ID=...                # ID do team Vercel (vazio se conta pessoal)
 ```
 
 ## Convenções

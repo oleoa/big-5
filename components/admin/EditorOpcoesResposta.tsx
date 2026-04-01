@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 const LABELS = [
   'Opção 1 (discordância máxima)',
@@ -35,20 +37,14 @@ export default function EditorOpcoesResposta({ inicial = DEFAULTS }: Props) {
 
   return (
     <div>
-      <input
-        type="hidden"
-        name="opcoes_resposta"
-        value={JSON.stringify(opcoes)}
-      />
+      <input type="hidden" name="opcoes_resposta" value={JSON.stringify(opcoes)} />
       <div className="space-y-2">
         {opcoes.map((opcao, i) => (
           <div key={i} className="flex items-center gap-3">
-            <span className="text-xs text-muted w-48 shrink-0">{LABELS[i]}</span>
-            <input
-              type="text"
+            <Label className="text-xs text-muted-foreground w-48 shrink-0">{LABELS[i]}</Label>
+            <Input
               value={opcao}
               onChange={e => atualizar(i, e.target.value)}
-              className="w-full border border-border rounded px-3 py-1.5 text-sm"
             />
           </div>
         ))}

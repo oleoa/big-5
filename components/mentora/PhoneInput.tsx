@@ -2,11 +2,11 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { COUNTRIES, DEFAULT_COUNTRY_CODE, type Country } from "@/data/countries";
+import { Input } from "@/components/ui/input";
 
 interface PhoneInputProps {
   value: string;
   onChange: (e164Value: string) => void;
-  corFundo?: string;
 }
 
 function getCountryByCode(code: string): Country {
@@ -43,7 +43,6 @@ export function isValidPhone(e164: string): boolean {
 }
 
 function findCountryFromE164(e164: string): Country | null {
-  // Match longest dial code first
   const sorted = [...COUNTRIES].sort(
     (a, b) => b.dialCode.length - a.dialCode.length
   );
@@ -53,7 +52,7 @@ function findCountryFromE164(e164: string): Country | null {
   return null;
 }
 
-export default function PhoneInput({ value, onChange, corFundo }: PhoneInputProps) {
+export default function PhoneInput({ value, onChange }: PhoneInputProps) {
   const [country, setCountry] = useState<Country>(() => {
     if (value) {
       const found = findCountryFromE164(value);
@@ -76,7 +75,6 @@ export default function PhoneInput({ value, onChange, corFundo }: PhoneInputProp
   const dropdownRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // Close dropdown on outside click
   useEffect(() => {
     if (!open) return;
     function handleClick(e: MouseEvent) {
@@ -92,7 +90,6 @@ export default function PhoneInput({ value, onChange, corFundo }: PhoneInputProp
     return () => document.removeEventListener("mousedown", handleClick);
   }, [open]);
 
-  // Focus search input when dropdown opens
   useEffect(() => {
     if (open && searchInputRef.current) {
       searchInputRef.current.focus();
@@ -136,18 +133,17 @@ export default function PhoneInput({ value, onChange, corFundo }: PhoneInputProp
 
   return (
     <div ref={containerRef} className="relative">
-      <div className="flex items-center w-full border border-gray-300 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-opacity-50">
+      <div className="flex items-center w-full rounded-lg border border-input overflow-hidden transition-colors focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/50">
         {/* Country selector button */}
         <button
           type="button"
           onClick={() => setOpen(!open)}
-          className="flex items-center gap-1.5 px-3 py-3 transition-colors border-r border-gray-300 shrink-0"
-          style={{ backgroundColor: corFundo ?? "#f9fafb" }}
+          className="flex items-center gap-1.5 px-3 h-11 transition-colors border-r border-input shrink-0 hover:bg-muted"
         >
           <span className="text-lg leading-none">{country.flag}</span>
-          <span className="text-sm text-gray-600">{country.dialCode}</span>
+          <span className="text-sm opacity-70">{country.dialCode}</span>
           <svg
-            className={`w-3 h-3 text-gray-400 transition-transform ${open ? "rotate-180" : ""}`}
+            className={`w-3 h-3 opacity-40 transition-transform ${open ? "rotate-180" : ""}`}
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -167,7 +163,7 @@ export default function PhoneInput({ value, onChange, corFundo }: PhoneInputProp
           inputMode="numeric"
           value={displayValue}
           onChange={(e) => handleDigitChange(e.target.value)}
-          className="flex-1 px-4 py-3 focus:outline-none bg-transparent"
+          className="flex-1 px-3 h-11 focus:outline-none bg-transparent text-base md:text-sm"
           placeholder={country.format?.replace(/#/g, "0") ?? "Número"}
         />
       </div>
@@ -176,17 +172,16 @@ export default function PhoneInput({ value, onChange, corFundo }: PhoneInputProp
       {open && (
         <div
           ref={dropdownRef}
-          className="absolute z-50 left-0 right-0 mt-1 border border-gray-200 rounded-lg shadow-lg overflow-hidden"
-          style={{ backgroundColor: corFundo ?? "#ffffff" }}
+          className="absolute z-50 left-0 right-0 mt-1 border border-border bg-popover rounded-lg shadow-lg overflow-hidden"
         >
           {/* Search */}
-          <div className="p-2 border-b border-gray-100">
-            <input
+          <div className="p-2 border-b border-border">
+            <Input
               ref={searchInputRef}
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-gray-300"
+              className="h-8"
               placeholder="Pesquisar país..."
             />
           </div>
@@ -194,7 +189,7 @@ export default function PhoneInput({ value, onChange, corFundo }: PhoneInputProp
           {/* Country list */}
           <ul className="max-h-60 overflow-y-auto">
             {filtered.length === 0 && (
-              <li className="px-4 py-3 text-sm text-gray-400 text-center">
+              <li className="px-4 py-3 text-sm text-muted-foreground text-center">
                 Nenhum país encontrado
               </li>
             )}
@@ -203,13 +198,13 @@ export default function PhoneInput({ value, onChange, corFundo }: PhoneInputProp
                 <button
                   type="button"
                   onClick={() => selectCountry(c)}
-                  className={`w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-gray-50 transition-colors text-sm ${
-                    c.code === country.code ? "bg-gray-50 font-medium" : ""
+                  className={`w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-muted transition-colors text-sm ${
+                    c.code === country.code ? "bg-muted font-medium" : ""
                   }`}
                 >
                   <span className="text-lg leading-none">{c.flag}</span>
                   <span className="flex-1">{c.name}</span>
-                  <span className="text-gray-400">{c.dialCode}</span>
+                  <span className="text-muted-foreground">{c.dialCode}</span>
                 </button>
               </li>
             ))}
