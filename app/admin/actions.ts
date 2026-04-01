@@ -3,7 +3,8 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
-import { criarMentora, atualizarMentora, toggleAtivoMentora } from '@/lib/db/admin';
+import { criarMentora, atualizarMentora, toggleAtivoMentora, getMentoraById, atualizarDnsConfig } from '@/lib/db/admin';
+import { adicionarDominio, removerDominio, verificarDominio } from '@/lib/vercel-domains';
 
 export async function loginAction(_prevState: { erro: string } | null, formData: FormData) {
   const senha = formData.get('senha') as string;
@@ -29,6 +30,16 @@ export async function logoutAction() {
 
 export async function criarMentoraAction(formData: FormData) {
   const dados = extrairDadosFormulario(formData);
+
+  if (dados.dominioCustom) {
+    const resultado = await adicionarDominio(dados.dominioCustom);
+    if (resultado.sucesso) {
+      dados.dominioDnsNome = resultado.dnsNome ?? null;
+      dados.dominioDnsValor = resultado.dnsValor ?? null;
+      dados.dominioVerificado = false;
+    }
+  }
+
   await criarMentora(dados);
   revalidatePath('/admin');
   redirect('/admin');
@@ -36,10 +47,55 @@ export async function criarMentoraAction(formData: FormData) {
 
 export async function atualizarMentoraAction(id: string, formData: FormData) {
   const dados = extrairDadosFormulario(formData);
+
+  const mentoraAtual = await getMentoraById(id);
+  const dominioAntigo = mentoraAtual?.dominioCustom ?? null;
+  const dominioNovo = dados.dominioCustom;
+
+  // Inicializar campos DNS
+  dados.dominioDnsNome = null;
+  dados.dominioDnsValor = null;
+  dados.dominioVerificado = false;
+
+  if (dominioAntigo !== dominioNovo) {
+    // Remover domínio antigo da Vercel
+    if (dominioAntigo) {
+      await removerDominio(dominioAntigo);
+    }
+    // Adicionar novo domínio
+    if (dominioNovo) {
+      const resultado = await adicionarDominio(dominioNovo);
+      if (resultado.sucesso) {
+        dados.dominioDnsNome = resultado.dnsNome ?? null;
+        dados.dominioDnsValor = resultado.dnsValor ?? null;
+      }
+    }
+  } else if (dominioNovo && mentoraAtual) {
+    // Domínio não mudou — preservar DNS existente
+    dados.dominioDnsNome = mentoraAtual.dominioDnsNome;
+    dados.dominioDnsValor = mentoraAtual.dominioDnsValor;
+    dados.dominioVerificado = mentoraAtual.dominioVerificado;
+  }
+
   await atualizarMentora(id, dados);
   revalidatePath('/admin');
   revalidatePath(`/admin/mentoras/${id}`);
   redirect('/admin');
+}
+
+export async function verificarDominioAction(id: string) {
+  const mentora = await getMentoraById(id);
+  if (!mentora?.dominioCustom) return;
+
+  const config = await verificarDominio(mentora.dominioCustom);
+  await atualizarDnsConfig(id, {
+    dnsNome: config.dnsNome,
+    dnsValor: config.dnsValor,
+    verificado: config.verificado,
+  });
+
+  revalidatePath('/admin');
+  revalidatePath(`/admin/mentoras/${id}`);
 }
 
 export async function toggleAtivoAction(id: string, ativo: boolean) {
@@ -72,6 +128,9 @@ function extrairDadosFormulario(formData: FormData) {
     perguntasExtras,
     subdominio: (formData.get('subdominio') as string) || null,
     dominioCustom: (formData.get('dominio_custom') as string) || null,
+    dominioDnsNome: null as string | null,
+    dominioDnsValor: null as string | null,
+    dominioVerificado: false,
     openaiApiKey: (formData.get('openai_api_key') as string) || null,
     promptExtra: (formData.get('prompt_extra') as string) || null,
     ativo: formData.get('ativo') === 'true',

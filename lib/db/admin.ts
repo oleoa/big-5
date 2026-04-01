@@ -1,9 +1,10 @@
 import { pool } from './client';
 import { Mentora } from '@/types/mentora';
+import { verificarDominio } from '@/lib/vercel-domains';
 
 export async function listarMentoras() {
   const { rows } = await pool.query(
-    'SELECT id, slug, nome, email, ativo, criado_em FROM mentoras ORDER BY criado_em DESC'
+    'SELECT id, slug, nome, email, ativo, criado_em, dominio_custom, dominio_dns_nome, dominio_dns_valor, dominio_verificado FROM mentoras ORDER BY criado_em DESC'
   );
   return rows;
 }
@@ -20,6 +21,9 @@ export async function getMentoraById(id: string): Promise<Mentora | null> {
     slug: row.slug,
     subdominio: row.subdominio,
     dominioCustom: row.dominio_custom,
+    dominioDnsNome: row.dominio_dns_nome,
+    dominioDnsValor: row.dominio_dns_valor,
+    dominioVerificado: row.dominio_verificado ?? false,
     nome: row.nome,
     email: row.email,
     logoPrincipalUrl: row.logo_principal_url,
@@ -51,8 +55,9 @@ export async function criarMentora(dados: Partial<Mentora>) {
       titulo_obrigado, texto_obrigado,
       opcoes_resposta, perguntas_extras,
       subdominio, dominio_custom,
-      openai_api_key, prompt_extra)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)
+      openai_api_key, prompt_extra,
+      dominio_dns_nome, dominio_dns_valor, dominio_verificado)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23)
      RETURNING *`,
     [
       dados.slug, dados.nome, dados.email,
@@ -73,6 +78,9 @@ export async function criarMentora(dados: Partial<Mentora>) {
       dados.dominioCustom ?? null,
       dados.openaiApiKey ?? null,
       dados.promptExtra ?? null,
+      dados.dominioDnsNome ?? null,
+      dados.dominioDnsValor ?? null,
+      dados.dominioVerificado ?? false,
     ]
   );
   return rows[0];
@@ -102,6 +110,9 @@ export async function atualizarMentora(id: string, dados: Partial<Mentora>) {
       openai_api_key = $20,
       prompt_extra = $21,
       ativo = COALESCE($22, ativo),
+      dominio_dns_nome = $23,
+      dominio_dns_valor = $24,
+      dominio_verificado = $25,
       atualizado_em = NOW()
     WHERE id = $1
     RETURNING *`,
@@ -121,9 +132,47 @@ export async function atualizarMentora(id: string, dados: Partial<Mentora>) {
       dados.openaiApiKey ?? null,
       dados.promptExtra ?? null,
       dados.ativo,
+      dados.dominioDnsNome ?? null,
+      dados.dominioDnsValor ?? null,
+      dados.dominioVerificado ?? false,
     ]
   );
   return rows[0];
+}
+
+export async function atualizarDnsConfig(id: string, config: { dnsNome: string; dnsValor: string; verificado: boolean }) {
+  await pool.query(
+    `UPDATE mentoras SET
+      dominio_dns_nome = $2,
+      dominio_dns_valor = $3,
+      dominio_verificado = $4,
+      atualizado_em = NOW()
+    WHERE id = $1`,
+    [id, config.dnsNome, config.dnsValor, config.verificado]
+  );
+}
+
+export async function verificarTodosDominios() {
+  const { rows } = await pool.query(
+    'SELECT id, dominio_custom, dominio_dns_nome, dominio_verificado FROM mentoras WHERE dominio_custom IS NOT NULL'
+  );
+
+  await Promise.all(
+    rows.map(async (row) => {
+      try {
+        const config = await verificarDominio(row.dominio_custom);
+        if (config.verificado !== row.dominio_verificado || !row.dominio_dns_nome) {
+          await atualizarDnsConfig(row.id, {
+            dnsNome: config.dnsNome,
+            dnsValor: config.dnsValor,
+            verificado: config.verificado,
+          });
+        }
+      } catch {
+        // Silenciar erros individuais para não bloquear o carregamento da página
+      }
+    })
+  );
 }
 
 export async function toggleAtivoMentora(id: string, ativo: boolean) {

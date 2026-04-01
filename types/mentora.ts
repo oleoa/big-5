@@ -13,6 +13,9 @@ export interface Mentora {
   slug: string;
   subdominio: string | null;
   dominioCustom: string | null;
+  dominioDnsNome: string | null;
+  dominioDnsValor: string | null;
+  dominioVerificado: boolean;
   nome: string;
   email: string;
   titulo: string;

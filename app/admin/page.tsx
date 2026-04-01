@@ -1,10 +1,11 @@
 import Link from 'next/link';
-import { listarMentoras } from '@/lib/db/admin';
-import { toggleAtivoAction } from './actions';
+import { listarMentoras, verificarTodosDominios } from '@/lib/db/admin';
+import { toggleAtivoAction, verificarDominioAction } from './actions';
 
 export const dynamic = 'force-dynamic';
 
 export default async function AdminPage() {
+  await verificarTodosDominios();
   const mentoras = await listarMentoras();
 
   return (
@@ -29,6 +30,7 @@ export default async function AdminPage() {
                 <th className="text-left px-4 py-3 font-medium text-muted">Nome</th>
                 <th className="text-left px-4 py-3 font-medium text-muted">Slug</th>
                 <th className="text-left px-4 py-3 font-medium text-muted">Email</th>
+                <th className="text-left px-4 py-3 font-medium text-muted">Domínio</th>
                 <th className="text-left px-4 py-3 font-medium text-muted">Estado</th>
                 <th className="text-right px-4 py-3 font-medium text-muted">Ações</th>
               </tr>
@@ -48,6 +50,42 @@ export default async function AdminPage() {
                     </a>
                   </td>
                   <td className="px-4 py-3 text-muted">{m.email}</td>
+                  <td className="px-4 py-3">
+                    {m.dominio_custom ? (
+                      <div className="space-y-2">
+                        <span className="text-foreground text-xs">{m.dominio_custom}</span>
+                        {m.dominio_dns_nome ? (
+                          <>
+                            <div className="text-xs text-muted">
+                              <code className="bg-surface px-1 py-0.5 rounded">CNAME {m.dominio_dns_nome} → {m.dominio_dns_valor}</code>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className={`inline-block px-1.5 py-0.5 rounded-full text-[10px] font-medium ${
+                                m.dominio_verificado
+                                  ? 'bg-green-100 text-green-700'
+                                  : 'bg-amber-100 text-amber-700'
+                              }`}>
+                                {m.dominio_verificado ? 'Verificado' : 'Aguardando DNS'}
+                              </span>
+                              {!m.dominio_verificado && (
+                                <form className="inline" action={verificarDominioAction.bind(null, m.id)}>
+                                  <button type="submit" className="text-[10px] text-accent hover:underline cursor-pointer">
+                                    Verificar
+                                  </button>
+                                </form>
+                              )}
+                            </div>
+                          </>
+                        ) : (
+                          <span className="inline-block px-1.5 py-0.5 rounded-full text-[10px] font-medium bg-amber-100 text-amber-700">
+                            DNS pendente
+                          </span>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-muted">—</span>
+                    )}
+                  </td>
                   <td className="px-4 py-3">
                     <span
                       className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${

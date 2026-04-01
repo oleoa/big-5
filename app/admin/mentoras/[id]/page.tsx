@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getMentoraById } from '@/lib/db/admin';
-import { atualizarMentoraAction } from '../../actions';
+import { atualizarMentoraAction, verificarDominioAction } from '../../actions';
 import EditorPerguntasExtras from '@/components/admin/EditorPerguntasExtras';
 import EditorOpcoesResposta from '@/components/admin/EditorOpcoesResposta';
 import InputLogo from '@/components/admin/InputLogo';
@@ -49,6 +49,44 @@ export default async function EditarMentoraPage({ params }: { params: Promise<{ 
               <input id="dominio_custom" name="dominio_custom" type="text" defaultValue={mentora.dominioCustom ?? ''} className="w-full border border-border rounded-md px-3 py-2 text-sm" />
               <p className="text-xs text-muted mt-1">Ex: bigfive.valquiriaabreu.com</p>
             </div>
+            {mentora.dominioCustom && (
+              <div className="md:col-span-2 p-4 bg-surface rounded-lg border border-border">
+                <h3 className="text-sm font-medium text-foreground mb-2">Configuração DNS</h3>
+                {mentora.dominioDnsNome ? (
+                  <>
+                    <div className="grid grid-cols-2 gap-2 text-sm mb-3">
+                      <div>
+                        <span className="text-muted">Nome:</span>{' '}
+                        <code className="bg-background px-1 py-0.5 rounded text-xs">{mentora.dominioDnsNome}</code>
+                      </div>
+                      <div>
+                        <span className="text-muted">Valor:</span>{' '}
+                        <code className="bg-background px-1 py-0.5 rounded text-xs">{mentora.dominioDnsValor}</code>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${
+                        mentora.dominioVerificado
+                          ? 'bg-green-100 text-green-700'
+                          : 'bg-amber-100 text-amber-700'
+                      }`}>
+                        {mentora.dominioVerificado ? 'Verificado' : 'Aguardando configuração'}
+                      </span>
+                      <form action={verificarDominioAction.bind(null, mentora.id)}>
+                        <button type="submit" className="text-sm text-accent hover:underline cursor-pointer">
+                          Verificar DNS
+                        </button>
+                      </form>
+                    </div>
+                    <p className="text-xs text-muted mt-2">A mentora deve adicionar um registo CNAME no provedor do domínio.</p>
+                  </>
+                ) : (
+                  <p className="text-sm text-amber-600">
+                    Erro ao registar domínio na Vercel. Tente guardar novamente ou altere o domínio.
+                  </p>
+                )}
+              </div>
+            )}
           </div>
         </section>
 
