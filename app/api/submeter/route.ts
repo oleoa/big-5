@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
     mentora: {
       nome: mentora.nome,
       email: mentora.email,
-      openaiApiKey: mentora.openaiApiKey,
+      id: mentora.id,
       promptExtra: mentora.promptExtra,
     },
     cliente: clientePayload,

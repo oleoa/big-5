@@ -287,7 +287,7 @@ Se `perguntasExtras` for `[]`, o formulário mostra apenas nome e email.
   mentora: {
     nome:          string;
     email:         string;
-    openaiApiKey:  string | null;
+    id:            string;
     promptExtra:   string | null;
   };
   cliente: {
