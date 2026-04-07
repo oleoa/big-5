@@ -46,6 +46,12 @@ export function TabIdentidade({ mentora }: Props) {
       </div>
 
       <div className="space-y-2">
+        <Label htmlFor="auth_user_id">Auth User ID (Neon Auth)</Label>
+        <Input id="auth_user_id" name="auth_user_id" defaultValue={mentora?.authUserId ?? ''} placeholder="UUID do user no Neon Auth" />
+        <p className="text-xs text-muted-foreground">Vincule a conta Neon Auth da mentora para acesso ao painel.</p>
+      </div>
+
+      <div className="space-y-2">
         <Label htmlFor="dominio_custom">Dominio personalizado</Label>
         <Input id="dominio_custom" name="dominio_custom" defaultValue={mentora?.dominioCustom ?? ''} placeholder="bigfive.meudominio.com" />
         <p className="text-xs text-muted-foreground">Dominio proprio da mentora (ex: bigfive.meudominio.com)</p>

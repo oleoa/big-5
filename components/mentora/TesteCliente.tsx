@@ -60,7 +60,7 @@ export default function TesteCliente({ mentora, basePath }: { mentora: Mentora; 
       } else {
         setFase("enviando");
         try {
-          const res = await fetch("/api/submeter", {
+          const res = await fetch("/api/respostas", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({

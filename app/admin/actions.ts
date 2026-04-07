@@ -189,5 +189,6 @@ function extrairDadosFormulario(formData: FormData) {
     openaiApiKey: (formData.get('openai_api_key') as string) || null,
     promptExtra: (formData.get('prompt_extra') as string) || null,
     ativo: formData.get('ativo') === 'true',
+    authUserId: (formData.get('auth_user_id') as string) || null,
   };
 }

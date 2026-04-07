@@ -22,14 +22,14 @@ interface Props {
 export default function EditorPerguntasExtras({ inicial = [] }: Props) {
   const [perguntas, setPerguntas] = useState<PerguntaExtra[]>(
     () => inicial
-      .map((p, i) => ({ ...p, ordem: p.ordem ?? i, payload: p.payload ?? '' }))
+      .map((p, i) => ({ ...p, ordem: p.ordem ?? i }))
       .sort((a, b) => a.ordem - b.ordem)
   );
 
   function adicionar() {
     setPerguntas(prev => [
       ...prev,
-      { id: '', label: '', tipo: 'text', placeholder: '', obrigatorio: false, ordem: prev.length, payload: '' }
+      { id: '', label: '', tipo: 'text', placeholder: '', obrigatorio: false, ordem: prev.length }
     ]);
   }
 
@@ -88,15 +88,6 @@ export default function EditorPerguntasExtras({ inicial = [] }: Props) {
                   value={pergunta.label}
                   onChange={e => atualizar(i, 'label', e.target.value)}
                   placeholder="ex: Qual sua idade?"
-                />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-xs">Payload</Label>
-                <Input
-                  value={pergunta.payload ?? ''}
-                  onChange={e => atualizar(i, 'payload', e.target.value)}
-                  placeholder="ex: client_age"
-                  className="font-mono text-sm"
                 />
               </div>
               <div className="space-y-1">

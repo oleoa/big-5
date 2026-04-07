@@ -4,6 +4,7 @@ import { Mentora, PerguntaExtra, DnsRegistro } from "@/types/mentora";
 function mapRow(row: Record<string, unknown>): Mentora {
   return {
     id: row.id as string,
+    authUserId: row.auth_user_id as string | null,
     slug: row.slug as string,
     dominioCustom: row.dominio_custom as string | null,
     dominioDnsRegistros: (row.dominio_dns_registros as DnsRegistro[]) ?? [],
@@ -49,6 +50,14 @@ export async function getMentoraByHost(host: string): Promise<Mentora | null> {
   const { rows } = await pool.query(
     "SELECT * FROM mentoras WHERE dominio_custom = $1 AND ativo = TRUE LIMIT 1",
     [host],
+  );
+  return rows[0] ? mapRow(rows[0]) : null;
+}
+
+export async function getMentoraByAuthUserId(authUserId: string): Promise<Mentora | null> {
+  const { rows } = await pool.query(
+    "SELECT * FROM mentoras WHERE auth_user_id = $1 AND ativo = TRUE LIMIT 1",
+    [authUserId],
   );
   return rows[0] ? mapRow(rows[0]) : null;
 }

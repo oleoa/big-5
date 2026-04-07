@@ -1,12 +1,9 @@
-/**
- * @deprecated Use POST /api/respostas instead.
- * Mantido para compatibilidade com sistemas externos (n8n, etc.).
- */
-import { NextRequest, NextResponse } from "next/server";
-import { getMentoraBySlug } from "@/lib/db/mentoras";
-import { criarResposta } from "@/lib/db/respostas";
-import { calculateResults } from "@/lib/scoring";
-import type { Answers } from "@/lib/types";
+import { NextRequest, NextResponse } from 'next/server';
+import { after } from 'next/server';
+import { getMentoraBySlug } from '@/lib/db/mentoras';
+import { criarResposta } from '@/lib/db/respostas';
+import { calculateResults } from '@/lib/scoring';
+import type { Answers } from '@/lib/types';
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
@@ -17,12 +14,12 @@ export async function POST(req: NextRequest) {
   };
 
   if (!slug || !cliente || !respostas) {
-    return NextResponse.json({ error: "Dados incompletos" }, { status: 400 });
+    return NextResponse.json({ error: 'Dados incompletos' }, { status: 400 });
   }
 
   const mentora = await getMentoraBySlug(slug);
   if (!mentora) {
-    return NextResponse.json({ error: "Mentora não encontrada" }, { status: 404 });
+    return NextResponse.json({ error: 'Mentora não encontrada' }, { status: 404 });
   }
 
   const result = calculateResults(respostas);
@@ -43,7 +40,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Gravar na tabela respostas
-  await criarResposta({
+  const resposta = await criarResposta({
     mentoraId: mentora.id,
     nome: cliente.nome,
     email: cliente.email,
@@ -53,14 +50,27 @@ export async function POST(req: NextRequest) {
     respostasBrutas: respostas,
   });
 
-  const payload = {
+  // Construir payload para n8n
+  const callbackUrl = `${req.nextUrl.origin}/api/respostas/${resposta.id}/relatorio`;
+  const n8nPayload = {
+    resposta_id: resposta.id,
+    callback_url: callbackUrl,
     mentora: {
       nome: mentora.nome,
       email: mentora.email,
       id: mentora.id,
       promptExtra: mentora.promptExtra,
     },
-    cliente: clientePayload,
+    cliente: {
+      ...clientePayload,
+      extras: mentora.perguntasExtras
+        .filter((p) => cliente[p.id] !== undefined)
+        .map((p) => ({
+          campo: p.label,
+          valor: cliente[p.id],
+          fala_ia: p.falaIa,
+        })),
+    },
     resultados: result.domains.map((d) => ({
       dominio: d.domainPt,
       codigo: d.domain,
@@ -76,16 +86,21 @@ export async function POST(req: NextRequest) {
     })),
   };
 
+  // Disparar webhook n8n em background (fire-and-forget)
   const webhookUrl = process.env.N8N_WEBHOOK_URL;
-  if (!webhookUrl) {
-    return NextResponse.json({ error: "Webhook não configurado" }, { status: 500 });
+  if (webhookUrl) {
+    after(async () => {
+      try {
+        await fetch(webhookUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(n8nPayload),
+        });
+      } catch {
+        // Silenciar erro do webhook — resposta já foi gravada na DB
+      }
+    });
   }
 
-  await fetch(webhookUrl, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true, id: resposta.id });
 }

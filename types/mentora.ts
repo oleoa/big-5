@@ -5,7 +5,7 @@ export interface PerguntaExtra {
   placeholder?: string;
   obrigatorio: boolean;
   ordem: number;
-  payload?: string;
+  falaIa?: string;
 }
 
 export interface DnsRegistro {
@@ -16,6 +16,7 @@ export interface DnsRegistro {
 
 export interface Mentora {
   id: string;
+  authUserId: string | null;
   slug: string;
   dominioCustom: string | null;
   dominioDnsRegistros: DnsRegistro[];

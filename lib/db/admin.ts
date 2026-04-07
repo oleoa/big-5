@@ -18,6 +18,7 @@ export async function getMentoraById(id: string): Promise<Mentora | null> {
   const row = rows[0];
   return {
     id: row.id,
+    authUserId: row.auth_user_id ?? null,
     slug: row.slug,
     dominioCustom: row.dominio_custom,
     dominioDnsRegistros: row.dominio_dns_registros ?? [],
@@ -54,8 +55,9 @@ export async function criarMentora(dados: Partial<Mentora>) {
       opcoes_resposta, perguntas_extras,
       dominio_custom,
       openai_api_key, prompt_extra,
-      dominio_dns_registros, dominio_verificado)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21)
+      dominio_dns_registros, dominio_verificado,
+      auth_user_id)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22)
      RETURNING *`,
     [
       dados.slug, dados.nome, dados.email,
@@ -77,6 +79,7 @@ export async function criarMentora(dados: Partial<Mentora>) {
       dados.promptExtra ?? null,
       JSON.stringify(dados.dominioDnsRegistros ?? []),
       dados.dominioVerificado ?? false,
+      dados.authUserId ?? null,
     ]
   );
   return rows[0];
@@ -107,6 +110,7 @@ export async function atualizarMentora(id: string, dados: Partial<Mentora>) {
       ativo = COALESCE($21, ativo),
       dominio_dns_registros = $22,
       dominio_verificado = $23,
+      auth_user_id = $24,
       atualizado_em = NOW()
     WHERE id = $1
     RETURNING *`,
@@ -127,9 +131,74 @@ export async function atualizarMentora(id: string, dados: Partial<Mentora>) {
       dados.ativo,
       JSON.stringify(dados.dominioDnsRegistros ?? []),
       dados.dominioVerificado ?? false,
+      dados.authUserId ?? null,
     ]
   );
   return rows[0];
+}
+
+// ── Funções focadas para o painel (só atualizam colunas relevantes) ──
+
+export async function atualizarConfig(id: string, dados: {
+  corPrimaria: string;
+  corFundo: string;
+  corTexto: string;
+  titulo: string;
+  subtitulo: string;
+  textoBotao: string;
+  tituloObrigado: string;
+  textoObrigado: string;
+  opcoesResposta: [string, string, string, string, string];
+}) {
+  await pool.query(
+    `UPDATE mentoras SET
+      cor_primaria = $2,
+      cor_fundo = $3,
+      cor_texto = $4,
+      titulo = $5,
+      subtitulo = $6,
+      texto_botao = $7,
+      titulo_obrigado = $8,
+      texto_obrigado = $9,
+      opcoes_resposta = $10,
+      atualizado_em = NOW()
+    WHERE id = $1`,
+    [
+      id,
+      dados.corPrimaria, dados.corFundo, dados.corTexto,
+      dados.titulo, dados.subtitulo, dados.textoBotao,
+      dados.tituloObrigado, dados.textoObrigado,
+      JSON.stringify(dados.opcoesResposta),
+    ]
+  );
+}
+
+export async function atualizarFormulario(id: string, perguntasExtras: unknown[]) {
+  await pool.query(
+    `UPDATE mentoras SET
+      perguntas_extras = $2,
+      atualizado_em = NOW()
+    WHERE id = $1`,
+    [id, JSON.stringify(perguntasExtras)]
+  );
+}
+
+export async function atualizarConta(id: string, dados: {
+  openaiApiKey?: string | null;
+  promptExtra?: string | null;
+}) {
+  if (dados.openaiApiKey !== undefined) {
+    await pool.query(
+      `UPDATE mentoras SET openai_api_key = $2, atualizado_em = NOW() WHERE id = $1`,
+      [id, dados.openaiApiKey]
+    );
+  }
+  if (dados.promptExtra !== undefined) {
+    await pool.query(
+      `UPDATE mentoras SET prompt_extra = $2, atualizado_em = NOW() WHERE id = $1`,
+      [id, dados.promptExtra]
+    );
+  }
 }
 
 export async function atualizarDnsConfig(id: string, config: { registros: DnsRegistro[]; verificado: boolean }) {
