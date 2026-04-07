@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { LayoutDashboard, Users, FileText, Settings, User } from 'lucide-react';
 import { UserButton } from '@neondatabase/auth/react/ui';
@@ -35,9 +36,9 @@ export function PainelSidebar({ mentoraNome }: { mentoraNome: string }) {
   return (
     <Sidebar>
       <SidebarHeader className="px-4 py-4">
-        <a href="/painel" className="text-base font-semibold tracking-tight">
+        <Link href="/painel" className="text-base font-semibold tracking-tight">
           {mentoraNome}
-        </a>
+        </Link>
         <span className="text-xs text-muted-foreground">Painel da mentora</span>
       </SidebarHeader>
 
@@ -48,7 +49,7 @@ export function PainelSidebar({ mentoraNome }: { mentoraNome: string }) {
             <SidebarMenu>
               {navItems.map((item) => (
                 <SidebarMenuItem key={item.href}>
-                  <SidebarMenuButton isActive={isActive(item.href)} render={<a href={item.href} />}>
+                  <SidebarMenuButton isActive={isActive(item.href)} render={<Link href={item.href} />}>
                     <item.icon className="size-4" />
                     <span>{item.label}</span>
                   </SidebarMenuButton>

@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getSlugByHost } from "@/lib/db/mentoras";
 
 const ROOT_DOMAIN = "bigfive.strutura.ai";
 const PLATFORM_HOSTS = new Set([ROOT_DOMAIN, "localhost:3000", "localhost"]);
 
-export function proxy(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const host = req.headers.get("host") ?? "";
   const hostname = host.split(":")[0];
   const pathname = req.nextUrl.pathname;
@@ -30,9 +31,18 @@ export function proxy(req: NextRequest) {
     return NextResponse.next();
   }
 
+  // Domínio custom — resolver slug e reescrever para /[slug]/...
+  const slug = await getSlugByHost(hostname);
+  if (!slug) {
+    return NextResponse.next();
+  }
+
   const url = req.nextUrl.clone();
-  url.pathname = `/domain/${hostname}${pathname}`;
-  return NextResponse.rewrite(url);
+  url.pathname = `/${slug}${pathname === "/" ? "" : pathname}`;
+
+  const response = NextResponse.rewrite(url);
+  response.headers.set("x-custom-domain", "1");
+  return response;
 }
 
 export const config = {

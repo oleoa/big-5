@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { getAuthenticatedMentora } from '@/lib/auth/helpers';
 import { atualizarConfig, atualizarFormulario, atualizarConta } from '@/lib/db/admin';
 import { apagarResposta, getRespostaById } from '@/lib/db/respostas';
+import type { TestResult } from '@/lib/types';
 
 export type PainelActionResult = {
   sucesso: boolean;
@@ -134,7 +135,7 @@ export async function reprocessarRespostaAction(
         email: resposta.email,
         celular: resposta.celular,
       },
-      resultados: resposta.scores.domains.map((d) => ({
+      resultados: ((typeof resposta.scores === 'string' ? JSON.parse(resposta.scores) : resposta.scores) as TestResult).domains.map((d) => ({
         dominio: d.domainPt,
         codigo: d.domain,
         percentil: d.percentile,

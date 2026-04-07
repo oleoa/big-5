@@ -12,6 +12,7 @@ export interface Resposta {
   camposExtras: Record<string, string>;
   respostasBrutas: Record<number, number> | null;
   relatorioHtml: string | null;
+  analiseAi: string | null;
   status: RespostaStatus;
   criadoEm: Date;
   atualizadoEm: Date;

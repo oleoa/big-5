@@ -13,6 +13,7 @@ function mapRow(row: Record<string, unknown>): Resposta {
     camposExtras: (row.campos_extras as Record<string, string>) ?? {},
     respostasBrutas: row.respostas_brutas as Record<number, number> | null,
     relatorioHtml: row.relatorio_html as string | null,
+    analiseAi: row.analise_ai as string | null,
     status: row.status as RespostaStatus,
     criadoEm: new Date(row.criado_em as string),
     atualizadoEm: new Date(row.atualizado_em as string),

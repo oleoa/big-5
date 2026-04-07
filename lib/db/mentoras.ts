@@ -46,12 +46,12 @@ export async function getMentoraBySlug(slug: string): Promise<Mentora | null> {
   return rows[0] ? mapRow(rows[0]) : null;
 }
 
-export async function getMentoraByHost(host: string): Promise<Mentora | null> {
+export async function getSlugByHost(host: string): Promise<string | null> {
   const { rows } = await pool.query(
-    "SELECT * FROM mentoras WHERE dominio_custom = $1 AND ativo = TRUE LIMIT 1",
+    "SELECT slug FROM mentoras WHERE dominio_custom = $1 AND ativo = TRUE LIMIT 1",
     [host],
   );
-  return rows[0] ? mapRow(rows[0]) : null;
+  return rows[0]?.slug ?? null;
 }
 
 export async function getMentoraByAuthUserId(authUserId: string): Promise<Mentora | null> {

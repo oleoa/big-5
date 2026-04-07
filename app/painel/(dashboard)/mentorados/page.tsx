@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ClickableRow } from '@/components/painel/ClickableRow';
 
 export const dynamic = 'force-dynamic';
 
@@ -79,9 +80,9 @@ export default async function MentoradosPage({
                 </thead>
                 <tbody>
                   {respostas.map((r) => (
-                    <tr key={r.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
+                    <ClickableRow key={r.id} href={`/painel/mentorados/${r.id}`} className="border-b last:border-0 hover:bg-muted/30 transition-colors cursor-pointer">
                       <td className="px-4 py-3">
-                        <Link href={`/painel/mentorados/${r.id}`} className="font-medium hover:underline">
+                        <Link href={`/painel/mentorados/${r.id}`} className="font-medium">
                           {r.nome}
                         </Link>
                       </td>
@@ -94,7 +95,7 @@ export default async function MentoradosPage({
                       <td className="px-4 py-3 text-muted-foreground">
                         {r.criadoEm.toLocaleDateString('pt-PT')}
                       </td>
-                    </tr>
+                    </ClickableRow>
                   ))}
                 </tbody>
               </table>
@@ -106,7 +107,7 @@ export default async function MentoradosPage({
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-2">
           {page > 1 ? (
-            <Button variant="outline" size="sm" render={<Link href={`/painel/mentorados?page=${page - 1}${q ? `&q=${q}` : ''}`} />}>
+            <Button variant="outline" size="sm" nativeButton={false} render={<Link href={`/painel/mentorados?page=${page - 1}${q ? `&q=${q}` : ''}`} />}>
               <ChevronLeft className="size-4" /> Anterior
             </Button>
           ) : (
@@ -118,7 +119,7 @@ export default async function MentoradosPage({
             Página {page} de {totalPages}
           </span>
           {page < totalPages ? (
-            <Button variant="outline" size="sm" render={<Link href={`/painel/mentorados?page=${page + 1}${q ? `&q=${q}` : ''}`} />}>
+            <Button variant="outline" size="sm" nativeButton={false} render={<Link href={`/painel/mentorados?page=${page + 1}${q ? `&q=${q}` : ''}`} />}>
               Seguinte <ChevronRight className="size-4" />
             </Button>
           ) : (
