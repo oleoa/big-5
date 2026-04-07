@@ -2,7 +2,7 @@
 
 import { NeonAuthUIProvider } from "@neondatabase/auth/react/ui";
 import { authClient } from "@/lib/auth/client";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 
 export default function PainelAuthLayout({
@@ -11,6 +11,7 @@ export default function PainelAuthLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
 
   return (
     <NeonAuthUIProvider
@@ -22,7 +23,13 @@ export default function PainelAuthLayout({
       replace={(path) =>
         router.replace(path.startsWith("/painel") ? path : `/painel${path}`)
       }
-      onSessionChange={() => router.push("/painel")}
+      onSessionChange={() => {
+        if (pathname === "/painel/sign-out") {
+          router.push("/painel/sign-in");
+        } else {
+          router.push("/painel");
+        }
+      }}
       Link={Link}
     >
       <div className="min-h-screen w-screen flex items-center justify-center bg-background">
