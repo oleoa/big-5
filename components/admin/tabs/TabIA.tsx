@@ -16,8 +16,18 @@ export function TabIA({ mentora }: Props) {
     <div className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="openai_api_key">Chave OpenAI</Label>
-        <Input id="openai_api_key" name="openai_api_key" type="password" defaultValue={mentora?.openaiApiKey ?? ''} placeholder="sk-..." />
-        <p className="text-xs text-muted-foreground">A chave é usada para gerar a análise personalizada.</p>
+        <Input
+          id="openai_api_key"
+          name="openai_api_key"
+          type="password"
+          defaultValue=""
+          placeholder={mentora?.openaiApiKey ? `sk-...${mentora.openaiApiKey.slice(-4)}` : 'sk-...'}
+        />
+        <p className="text-xs text-muted-foreground">
+          {mentora?.openaiApiKey
+            ? 'Chave configurada. Deixe em branco para manter a atual, ou cole uma nova para substituir.'
+            : 'A chave é usada para gerar a análise personalizada.'}
+        </p>
       </div>
       <div className="space-y-2">
         <Label htmlFor="prompt_extra">Prompt extra</Label>

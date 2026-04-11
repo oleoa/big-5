@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Mentora } from "@/types/mentora";
+import { MentoraPublica } from "@/types/mentora";
 import items from "@/data/ipip-neo-120-items.json";
 import PhoneInput, { isValidPhone } from "@/components/mentora/PhoneInput";
 import MentoraLayout from "./MentoraLayout";
@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 
 type Fase = "dados" | "teste" | "enviando";
 
-export default function TesteCliente({ mentora, basePath }: { mentora: Mentora; basePath: string }) {
+export default function TesteCliente({ mentora, basePath }: { mentora: MentoraPublica; basePath: string }) {
   const router = useRouter();
   const [fase, setFase] = useState<Fase>("dados");
   const [dados, setDados] = useState<Record<string, string>>({

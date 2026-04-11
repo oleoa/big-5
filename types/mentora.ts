@@ -42,3 +42,5 @@ export interface Mentora {
   criadoEm: Date;
   atualizadoEm: Date;
 }
+
+export type MentoraPublica = Omit<Mentora, 'openaiApiKey' | 'promptExtra' | 'authUserId'>;

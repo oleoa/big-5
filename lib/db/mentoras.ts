@@ -1,5 +1,5 @@
 import { pool } from "./client";
-import { Mentora, PerguntaExtra, DnsRegistro } from "@/types/mentora";
+import { Mentora, MentoraPublica, PerguntaExtra, DnsRegistro } from "@/types/mentora";
 
 function mapRow(row: Record<string, unknown>): Mentora {
   return {
@@ -36,6 +36,11 @@ function mapRow(row: Record<string, unknown>): Mentora {
     criadoEm: row.criado_em as Date,
     atualizadoEm: row.atualizado_em as Date,
   };
+}
+
+export function sanitizeMentora(mentora: Mentora): MentoraPublica {
+  const { openaiApiKey, promptExtra, authUserId, ...safe } = mentora;
+  return safe;
 }
 
 export async function getMentoraBySlug(slug: string): Promise<Mentora | null> {

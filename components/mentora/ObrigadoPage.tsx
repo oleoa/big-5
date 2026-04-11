@@ -1,8 +1,8 @@
-import { Mentora } from '@/types/mentora';
+import { MentoraPublica } from '@/types/mentora';
 import MentoraLayout from './MentoraLayout';
 import { Card, CardContent } from '@/components/ui/card';
 
-export default function ObrigadoPage({ mentora }: { mentora: Mentora }) {
+export default function ObrigadoPage({ mentora }: { mentora: MentoraPublica }) {
   return (
     <MentoraLayout mentora={mentora}>
       <Card className="w-full max-w-md">

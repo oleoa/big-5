@@ -2,12 +2,12 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Mentora } from '@/types/mentora';
+import { MentoraPublica } from '@/types/mentora';
 import MentoraLayout from './MentoraLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
-export default function LandingPage({ mentora, basePath }: { mentora: Mentora; basePath: string }) {
+export default function LandingPage({ mentora, basePath }: { mentora: MentoraPublica; basePath: string }) {
   const [loading, setLoading] = useState(false);
 
   return (

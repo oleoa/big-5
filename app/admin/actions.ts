@@ -40,7 +40,13 @@ export async function logoutAction() {
 // ── Fetch single mentora (for Sheet) ───────────────────────────
 
 export async function getMentoraAction(id: string): Promise<import('@/types/mentora').Mentora | null> {
-  return getMentoraById(id);
+  const mentora = await getMentoraById(id);
+  if (!mentora) return null;
+  // Mascarar a API key — enviar apenas os últimos 4 caracteres para o client
+  if (mentora.openaiApiKey) {
+    mentora.openaiApiKey = `sk-...${mentora.openaiApiKey.slice(-4)}`;
+  }
+  return mentora;
 }
 
 // ── CRUD actions (return ActionResult, no redirect) ────────────
@@ -89,6 +95,12 @@ export async function atualizarMentoraAction(
     const dados = extrairDadosFormulario(formData);
 
     const mentoraAtual = await getMentoraById(id);
+
+    // Se o campo da chave veio vazio, manter a chave atual
+    if (!dados.openaiApiKey && mentoraAtual?.openaiApiKey) {
+      dados.openaiApiKey = mentoraAtual.openaiApiKey;
+    }
+
     const dominioAntigo = mentoraAtual?.dominioCustom ?? null;
     const dominioNovo = dados.dominioCustom;
     const chaveMudou = dados.openaiApiKey && dados.openaiApiKey !== mentoraAtual?.openaiApiKey;
