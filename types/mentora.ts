@@ -32,6 +32,7 @@ export interface Mentora {
   corFundo: string;
   corTexto: string;
   textoBotao: string;
+  fotoCircular: boolean;
   opcoesResposta: [string, string, string, string, string];
   tituloObrigado: string;
   textoObrigado: string;

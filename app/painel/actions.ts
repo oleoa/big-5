@@ -48,6 +48,7 @@ export async function atualizarConfigAction(dados: {
   titulo: string;
   subtitulo: string;
   textoBotao: string;
+  fotoCircular: boolean;
   tituloObrigado: string;
   textoObrigado: string;
   opcoesResposta: [string, string, string, string, string];

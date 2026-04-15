@@ -200,6 +200,7 @@ function extrairDadosFormulario(formData: FormData) {
     dominioVerificado: false,
     openaiApiKey: (formData.get('openai_api_key') as string) || null,
     promptExtra: (formData.get('prompt_extra') as string) || null,
+    fotoCircular: formData.get('foto_circular') === 'true',
     ativo: formData.get('ativo') === 'true',
     authUserId: (formData.get('auth_user_id') as string) || null,
   };

@@ -20,6 +20,7 @@ function mapRow(row: Record<string, unknown>): Mentora {
     corFundo: (row.cor_fundo as string) ?? "#ffffff",
     corTexto: (row.cor_texto as string) ?? "#111827",
     textoBotao: row.texto_botao as string,
+    fotoCircular: (row.foto_circular as boolean) ?? false,
     perguntasExtras: (row.perguntas_extras as PerguntaExtra[]) ?? [],
     opcoesResposta: row.opcoes_resposta as [
       string,

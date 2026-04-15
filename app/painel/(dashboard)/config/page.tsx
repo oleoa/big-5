@@ -20,6 +20,7 @@ export default function ConfigPage() {
   const [titulo, setTitulo] = useState(mentora.titulo);
   const [subtitulo, setSubtitulo] = useState(mentora.subtitulo);
   const [textoBotao, setTextoBotao] = useState(mentora.textoBotao);
+  const [fotoCircular, setFotoCircular] = useState(mentora.fotoCircular);
   const [tituloObrigado, setTituloObrigado] = useState(mentora.tituloObrigado);
   const [textoObrigado, setTextoObrigado] = useState(mentora.textoObrigado);
   const [opcoes, setOpcoes] = useState(mentora.opcoesResposta);
@@ -41,6 +42,7 @@ export default function ConfigPage() {
       titulo,
       subtitulo,
       textoBotao,
+      fotoCircular,
       tituloObrigado,
       textoObrigado,
       opcoesResposta: opcoes,
@@ -157,6 +159,21 @@ export default function ConfigPage() {
           <div className="space-y-2">
             <Label>Texto do botão</Label>
             <Input value={textoBotao} onChange={e => setTextoBotao(e.target.value)} />
+          </div>
+          <div className="flex items-center justify-between">
+            <div>
+              <Label>Foto circular</Label>
+              <p className="text-xs text-muted-foreground">Aplica formato redondo à foto principal na landing page.</p>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={fotoCircular}
+              onClick={() => setFotoCircular(!fotoCircular)}
+              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors ${fotoCircular ? 'bg-primary' : 'bg-input'}`}
+            >
+              <span className={`pointer-events-none inline-block size-5 rounded-full bg-background shadow-sm ring-0 transition-transform ${fotoCircular ? 'translate-x-5' : 'translate-x-0'}`} />
+            </button>
           </div>
         </CardContent>
       </Card>

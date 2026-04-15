@@ -94,7 +94,7 @@ export default function TesteCliente({ mentora, basePath }: { mentora: MentoraPu
   if (fase === "dados") {
     return (
       <MentoraLayout mentora={mentora}>
-        <Card className="w-full max-w-md">
+        <Card className="w-full max-w-md ring-0 overflow-visible">
           <CardHeader className="text-center pb-0">
             {mentora.logoSecundariaUrl && (
               <img
@@ -224,7 +224,7 @@ export default function TesteCliente({ mentora, basePath }: { mentora: MentoraPu
             Pergunta {perguntaAtual + 1} de {items.length} ({Math.round(progresso)}%)
           </p>
 
-          <Card>
+          <Card className="border-0 shadow-none ring-0">
             <CardContent className="pt-6 pb-6">
               {/* Question */}
               <div key={item.id} className="animate-fade-in">
@@ -234,8 +234,8 @@ export default function TesteCliente({ mentora, basePath }: { mentora: MentoraPu
 
                 {/* Options */}
                 <div className="space-y-3">
-                  {mentora.opcoesResposta.map((label, i) => {
-                    const valor = i + 1;
+                  {[...mentora.opcoesResposta].reverse().map((label, i) => {
+                    const valor = mentora.opcoesResposta.length - i;
                     const selecionada = respostaAtual === valor;
                     return (
                       <Button

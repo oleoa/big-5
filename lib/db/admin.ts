@@ -34,6 +34,7 @@ export async function getMentoraById(id: string): Promise<Mentora | null> {
     titulo: row.titulo,
     subtitulo: row.subtitulo,
     textoBotao: row.texto_botao,
+    fotoCircular: row.foto_circular ?? false,
     perguntasExtras: row.perguntas_extras,
     opcoesResposta: row.opcoes_resposta,
     tituloObrigado: row.titulo_obrigado,
@@ -56,8 +57,8 @@ export async function criarMentora(dados: Partial<Mentora>) {
       dominio_custom,
       openai_api_key, prompt_extra,
       dominio_dns_registros, dominio_verificado,
-      auth_user_id)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22)
+      auth_user_id, foto_circular)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23)
      RETURNING *`,
     [
       dados.slug, dados.nome, dados.email,
@@ -80,6 +81,7 @@ export async function criarMentora(dados: Partial<Mentora>) {
       JSON.stringify(dados.dominioDnsRegistros ?? []),
       dados.dominioVerificado ?? false,
       dados.authUserId ?? null,
+      dados.fotoCircular ?? false,
     ]
   );
   return rows[0];
@@ -111,6 +113,7 @@ export async function atualizarMentora(id: string, dados: Partial<Mentora>) {
       dominio_dns_registros = $22,
       dominio_verificado = $23,
       auth_user_id = $24,
+      foto_circular = COALESCE($25, foto_circular),
       atualizado_em = NOW()
     WHERE id = $1
     RETURNING *`,
@@ -132,6 +135,7 @@ export async function atualizarMentora(id: string, dados: Partial<Mentora>) {
       JSON.stringify(dados.dominioDnsRegistros ?? []),
       dados.dominioVerificado ?? false,
       dados.authUserId ?? null,
+      dados.fotoCircular ?? null,
     ]
   );
   return rows[0];
@@ -146,6 +150,7 @@ export async function atualizarConfig(id: string, dados: {
   titulo: string;
   subtitulo: string;
   textoBotao: string;
+  fotoCircular: boolean;
   tituloObrigado: string;
   textoObrigado: string;
   opcoesResposta: [string, string, string, string, string];
@@ -161,6 +166,7 @@ export async function atualizarConfig(id: string, dados: {
       titulo_obrigado = $8,
       texto_obrigado = $9,
       opcoes_resposta = $10,
+      foto_circular = $11,
       atualizado_em = NOW()
     WHERE id = $1`,
     [
@@ -169,6 +175,7 @@ export async function atualizarConfig(id: string, dados: {
       dados.titulo, dados.subtitulo, dados.textoBotao,
       dados.tituloObrigado, dados.textoObrigado,
       JSON.stringify(dados.opcoesResposta),
+      dados.fotoCircular,
     ]
   );
 }

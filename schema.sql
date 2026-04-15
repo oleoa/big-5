@@ -30,6 +30,9 @@ CREATE TABLE mentoras (
   subtitulo           TEXT    NOT NULL DEFAULT 'Um questionário científico de 120 perguntas baseado no modelo Big Five.',
   texto_botao         TEXT    NOT NULL DEFAULT 'Iniciar teste',
 
+  -- Foto circular na landing page
+  foto_circular       BOOLEAN NOT NULL DEFAULT FALSE,
+
   -- Personalização do formulário
   opcoes_resposta     JSONB   NOT NULL DEFAULT '["Discordo totalmente","Discordo","Neutro","Concordo","Concordo totalmente"]'::jsonb,
 

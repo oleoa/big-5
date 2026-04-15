@@ -15,6 +15,7 @@ CREATE TABLE mentoras (
   cor_fundo           TEXT NOT NULL DEFAULT '#ffffff',
   cor_texto           TEXT NOT NULL DEFAULT '#111827',
   texto_botao         TEXT NOT NULL DEFAULT 'Iniciar teste',
+  foto_circular       BOOLEAN NOT NULL DEFAULT FALSE,
   perguntas_extras    JSONB NOT NULL DEFAULT '[]'::jsonb,
   opcoes_resposta     JSONB NOT NULL DEFAULT '["Discordo totalmente","Discordo","Neutro","Concordo","Concordo totalmente"]'::jsonb,
   titulo_obrigado     TEXT NOT NULL DEFAULT 'Obrigado!',
