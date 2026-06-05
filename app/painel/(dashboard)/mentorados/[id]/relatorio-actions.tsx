@@ -75,7 +75,7 @@ export function RelatorioActions({
           {loading === 'pdf' ? 'A gerar...' : 'Baixar PDF'}
         </Button>
       )}
-      {(status === 'erro' || status === 'pendente') && (
+      {(status === 'erro' || status === 'pendente' || status === 'processando') && (
         <Button
           variant="outline"
           size="sm"

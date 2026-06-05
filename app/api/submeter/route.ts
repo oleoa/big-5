@@ -1,12 +1,18 @@
 /**
  * @deprecated Use POST /api/respostas instead.
- * Mantido para compatibilidade com sistemas externos (n8n, etc.).
+ * Mantido para compatibilidade com sistemas externos. Agora gera o relatório
+ * nativamente (sem n8n), tal como /api/respostas.
  */
 import { NextRequest, NextResponse } from "next/server";
+import { after } from "next/server";
 import { getMentoraBySlug } from "@/lib/db/mentoras";
 import { criarResposta } from "@/lib/db/respostas";
 import { calculateResults } from "@/lib/scoring";
+import { gerarRelatorio } from "@/lib/report/gerarRelatorio";
 import type { Answers } from "@/lib/types";
+
+export const runtime = "nodejs";
+export const maxDuration = 300;
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
@@ -27,23 +33,14 @@ export async function POST(req: NextRequest) {
 
   const result = calculateResults(respostas);
 
-  // Remapear chaves do cliente usando o campo payload da pergunta extra
-  const clientePayload: Record<string, string> = {
-    nome: cliente.nome,
-    email: cliente.email,
-    celular: cliente.celular,
-  };
   const camposExtras: Record<string, string> = {};
   for (const p of mentora.perguntasExtras) {
     if (cliente[p.id] !== undefined) {
-      const key = p.label;
-      clientePayload[key] = cliente[p.id];
       camposExtras[p.label] = cliente[p.id];
     }
   }
 
-  // Gravar na tabela respostas
-  await criarResposta({
+  const resposta = await criarResposta({
     mentoraId: mentora.id,
     nome: cliente.nome,
     email: cliente.email,
@@ -53,39 +50,7 @@ export async function POST(req: NextRequest) {
     respostasBrutas: respostas,
   });
 
-  const payload = {
-    mentora: {
-      nome: mentora.nome,
-      email: mentora.email,
-      id: mentora.id,
-      promptExtra: mentora.promptExtra,
-    },
-    cliente: clientePayload,
-    resultados: result.domains.map((d) => ({
-      dominio: d.domainPt,
-      codigo: d.domain,
-      percentil: d.percentile,
-      pontuacao: d.score,
-      nivel: d.descriptor,
-      facetas: d.facets.map((f) => ({
-        nome: f.facetPt,
-        percentil: f.percentile,
-        pontuacao: f.score,
-        nivel: f.descriptor,
-      })),
-    })),
-  };
+  after(() => gerarRelatorio(resposta, mentora));
 
-  const webhookUrl = process.env.N8N_WEBHOOK_URL;
-  if (!webhookUrl) {
-    return NextResponse.json({ error: "Webhook não configurado" }, { status: 500 });
-  }
-
-  await fetch(webhookUrl, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true, id: resposta.id });
 }

@@ -43,6 +43,9 @@ CREATE TABLE mentoras (
   -- IA
   openai_api_key      TEXT,
   prompt_extra        TEXT,
+  modelo_ia           TEXT    NOT NULL DEFAULT 'gpt-4o-mini',
+  vector_store_id     TEXT,    -- OpenAI vector store (RAG / file_search)
+  knowledge_file_id   TEXT,    -- OpenAI file carregado no vector store
 
   -- Controlo
   ativo               BOOLEAN NOT NULL DEFAULT TRUE,

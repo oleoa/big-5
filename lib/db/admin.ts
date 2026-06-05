@@ -41,6 +41,9 @@ export async function getMentoraById(id: string): Promise<Mentora | null> {
     textoObrigado: row.texto_obrigado,
     openaiApiKey: row.openai_api_key,
     promptExtra: row.prompt_extra,
+    modeloIa: row.modelo_ia ?? 'gpt-4o-mini',
+    vectorStoreId: row.vector_store_id ?? null,
+    knowledgeFileId: row.knowledge_file_id ?? null,
     ativo: row.ativo,
     criadoEm: row.criado_em,
     atualizadoEm: row.atualizado_em,
@@ -57,8 +60,8 @@ export async function criarMentora(dados: Partial<Mentora>) {
       dominio_custom,
       openai_api_key, prompt_extra,
       dominio_dns_registros, dominio_verificado,
-      auth_user_id, foto_circular)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23)
+      auth_user_id, foto_circular, modelo_ia)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24)
      RETURNING *`,
     [
       dados.slug, dados.nome, dados.email,
@@ -82,6 +85,7 @@ export async function criarMentora(dados: Partial<Mentora>) {
       dados.dominioVerificado ?? false,
       dados.authUserId ?? null,
       dados.fotoCircular ?? false,
+      dados.modeloIa ?? 'gpt-4o-mini',
     ]
   );
   return rows[0];
@@ -114,6 +118,7 @@ export async function atualizarMentora(id: string, dados: Partial<Mentora>) {
       dominio_verificado = $23,
       auth_user_id = $24,
       foto_circular = COALESCE($25, foto_circular),
+      modelo_ia = COALESCE($26, modelo_ia),
       atualizado_em = NOW()
     WHERE id = $1
     RETURNING *`,
@@ -136,12 +141,27 @@ export async function atualizarMentora(id: string, dados: Partial<Mentora>) {
       dados.dominioVerificado ?? false,
       dados.authUserId ?? null,
       dados.fotoCircular ?? null,
+      dados.modeloIa ?? null,
     ]
   );
   return rows[0];
 }
 
 // ── Funções focadas para o painel (só atualizam colunas relevantes) ──
+
+export async function atualizarRagMentora(id: string, dados: {
+  vectorStoreId: string | null;
+  knowledgeFileId: string | null;
+}) {
+  await pool.query(
+    `UPDATE mentoras SET
+      vector_store_id = $2,
+      knowledge_file_id = $3,
+      atualizado_em = NOW()
+    WHERE id = $1`,
+    [id, dados.vectorStoreId, dados.knowledgeFileId]
+  );
+}
 
 export async function atualizarConfig(id: string, dados: {
   corPrimaria: string;

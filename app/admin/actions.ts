@@ -3,9 +3,11 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
+import { after } from 'next/server';
 import { criarMentora, atualizarMentora, toggleAtivoMentora, getMentoraById, atualizarDnsConfig } from '@/lib/db/admin';
 import { adicionarDominio, removerDominio, verificarDominio } from '@/lib/vercel-domains';
-import { validarChaveOpenAI, notificarWebhookCriacao } from '@/lib/openai';
+import { validarChaveOpenAI } from '@/lib/openai';
+import { provisionarMentora } from '@/lib/report/provisioning';
 import type { DnsRegistro } from '@/types/mentora';
 
 export type ActionResult = {
@@ -74,7 +76,8 @@ export async function criarMentoraAction(
     const row = await criarMentora(dados);
 
     if (dados.openaiApiKey) {
-      await notificarWebhookCriacao(row.id);
+      // Provisiona o RAG (vector store) em background — não bloqueia o form.
+      after(() => provisionarMentora(row.id).catch((e) => console.error('Erro ao provisionar RAG:', e)));
     }
 
     revalidatePath('/admin');
@@ -132,13 +135,24 @@ export async function atualizarMentoraAction(
     await atualizarMentora(id, dados);
 
     if (chaveMudou) {
-      await notificarWebhookCriacao(id);
+      // Re-provisiona o RAG na nova chave em background.
+      after(() => provisionarMentora(id).catch((e) => console.error('Erro ao provisionar RAG:', e)));
     }
 
     revalidatePath('/admin');
     return { sucesso: true };
   } catch (e) {
     return { sucesso: false, erro: e instanceof Error ? e.message : 'Erro ao atualizar mentora' };
+  }
+}
+
+export async function provisionarMentoraAction(id: string): Promise<ActionResult> {
+  try {
+    await provisionarMentora(id);
+    revalidatePath('/admin');
+    return { sucesso: true };
+  } catch (e) {
+    return { sucesso: false, erro: e instanceof Error ? e.message : 'Erro ao provisionar RAG' };
   }
 }
 
@@ -200,6 +214,7 @@ function extrairDadosFormulario(formData: FormData) {
     dominioVerificado: false,
     openaiApiKey: (formData.get('openai_api_key') as string) || null,
     promptExtra: (formData.get('prompt_extra') as string) || null,
+    modeloIa: (formData.get('modelo_ia') as string) || undefined,
     fotoCircular: formData.get('foto_circular') === 'true',
     ativo: formData.get('ativo') === 'true',
     authUserId: (formData.get('auth_user_id') as string) || null,

@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { getAuthenticatedMentora } from '@/lib/auth/helpers';
 import { atualizarConfig, atualizarFormulario, atualizarConta } from '@/lib/db/admin';
 import { apagarResposta, getRespostaById } from '@/lib/db/respostas';
-import type { TestResult } from '@/lib/types';
+import { gerarRelatorio } from '@/lib/report/gerarRelatorio';
 
 export type PainelActionResult = {
   sucesso: boolean;
@@ -117,45 +117,8 @@ export async function reprocessarRespostaAction(
       return { sucesso: false, erro: 'Resposta não encontrada' };
     }
 
-    const webhookUrl = process.env.N8N_WEBHOOK_URL;
-    if (!webhookUrl) {
-      return { sucesso: false, erro: 'Webhook não configurado' };
-    }
-
-    const n8nPayload = {
-      resposta_id: resposta.id,
-      callback_url: `${process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000'}/api/respostas/${resposta.id}/relatorio`,
-      mentora: {
-        nome: mentora.nome,
-        email: mentora.email,
-        id: mentora.id,
-        promptExtra: mentora.promptExtra,
-      },
-      cliente: {
-        nome: resposta.nome,
-        email: resposta.email,
-        celular: resposta.celular,
-      },
-      resultados: ((typeof resposta.scores === 'string' ? JSON.parse(resposta.scores) : resposta.scores) as TestResult).domains.map((d) => ({
-        dominio: d.domainPt,
-        codigo: d.domain,
-        percentil: d.percentile,
-        pontuacao: d.score,
-        nivel: d.descriptor,
-        facetas: d.facets.map((f) => ({
-          nome: f.facetPt,
-          percentil: f.percentile,
-          pontuacao: f.score,
-          nivel: f.descriptor,
-        })),
-      })),
-    };
-
-    await fetch(webhookUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(n8nPayload),
-    });
+    // Regenera o relatório de forma síncrona (ação manual → feedback real).
+    await gerarRelatorio(resposta, mentora);
 
     revalidatePath(`/painel/mentorados/${respostaId}`);
     return { sucesso: true };

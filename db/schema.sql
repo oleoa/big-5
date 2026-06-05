@@ -22,6 +22,9 @@ CREATE TABLE mentoras (
   texto_obrigado      TEXT NOT NULL DEFAULT 'Suas respostas foram enviadas. Você receberá a análise em breve.',
   openai_api_key      TEXT,
   prompt_extra        TEXT,
+  modelo_ia           TEXT NOT NULL DEFAULT 'gpt-4o-mini',
+  vector_store_id     TEXT,
+  knowledge_file_id   TEXT,
   ativo               BOOLEAN NOT NULL DEFAULT TRUE,
   criado_em           TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   atualizado_em       TIMESTAMPTZ NOT NULL DEFAULT NOW()

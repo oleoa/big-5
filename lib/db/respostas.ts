@@ -112,6 +112,26 @@ export async function atualizarRelatorio(
   );
 }
 
+export async function atualizarStatusResposta(
+  id: string,
+  status: RespostaStatus,
+): Promise<void> {
+  await pool.query(
+    'UPDATE respostas SET status = $2 WHERE id = $1',
+    [id, status],
+  );
+}
+
+export async function salvarRelatorio(
+  id: string,
+  dados: { relatorioHtml: string; analiseAi: string | null; status: RespostaStatus },
+): Promise<void> {
+  await pool.query(
+    'UPDATE respostas SET relatorio_html = $2, analise_ai = $3, status = $4 WHERE id = $1',
+    [id, dados.relatorioHtml, dados.analiseAi, dados.status],
+  );
+}
+
 export async function apagarResposta(id: string, mentoraId: string): Promise<boolean> {
   const result = await pool.query(
     'DELETE FROM respostas WHERE id = $1 AND mentora_id = $2',

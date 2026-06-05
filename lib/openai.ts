@@ -4,11 +4,3 @@ export async function validarChaveOpenAI(apiKey: string): Promise<boolean> {
   });
   return res.ok;
 }
-
-export async function notificarWebhookCriacao(mentoraId: string): Promise<void> {
-  await fetch('https://automations.strutura.ai/webhook/b5/create', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ mentoraId }),
-  });
-}

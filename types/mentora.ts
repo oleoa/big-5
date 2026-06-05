@@ -39,6 +39,9 @@ export interface Mentora {
   perguntasExtras: PerguntaExtra[];
   openaiApiKey: string | null;
   promptExtra: string | null;
+  modeloIa: string;
+  vectorStoreId: string | null;
+  knowledgeFileId: string | null;
   ativo: boolean;
   criadoEm: Date;
   atualizadoEm: Date;
