@@ -6,9 +6,9 @@ import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 
 const PRESET_COLORS = [
-  '#EF4444', '#F59E0B', '#10B981', '#3B82F6', '#8B5CF6',
-  '#EC4899', '#F97316', '#14B8A6', '#6366F1', '#A855F7',
-  '#DC2626', '#CA8A04', '#059669', '#2563EB', '#7C3AED',
+  '#C99A2D', '#8B6F2C', '#FAF7F2', '#2C2820', '#5C7A3A',
+  '#B5462E', '#4A6B8B', '#EF4444', '#F59E0B', '#10B981',
+  '#3B82F6', '#8B5CF6', '#EC4899', '#F97316', '#6366F1',
   '#111827', '#374151', '#6B7280', '#D1D5DB', '#FFFFFF',
 ];
 

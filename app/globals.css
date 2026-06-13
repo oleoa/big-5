@@ -5,96 +5,98 @@
 
 @custom-variant dark (&:is(.dark *));
 
-:root {
-  /* === Shadcn base variables === */
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --radius: 0.625rem;
+/* ============================================================
+   Strutura — Warm Minimal (LIGHT ONLY)
+   Off-white quente como base, mostarda como acento único.
+   Nunca branco puro, nunca cinza neutro, nunca preto absoluto.
+   Paleta oficial: #C99A2D · #8B6F2C · #F5EFE0 · #FAF7F2 · #2C2820
+   ============================================================ */
 
-  /* === Shadcn sidebar === */
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+:root {
+  /* === Shadcn slots === */
+  --background: #FAF7F2;
+  --foreground: #2C2820;
+  --card: #FFFEFB;
+  --card-foreground: #2C2820;
+  --popover: #FFFEFB;
+  --popover-foreground: #2C2820;
+  --primary: #C99A2D;
+  --primary-foreground: #FFFEFB;
+  --secondary: #F5F1E8;
+  --secondary-foreground: #2C2820;
+  --muted: #F5F1E8;
+  --muted-foreground: #8B7E68;
+  /* slot accent do shadcn = ground de hover de menus → accent-soft com tinta ink
+     (NÃO mostarda saturada — hover de dropdown ficaria ilegível) */
+  --accent: #F5EFE0;
+  --accent-foreground: #2C2820;
+  --destructive: #B5462E;
+  --border: #E8E0D0;
+  --input: #D8CDB5;
+  --ring: #C99A2D;
+  --radius: 0.625rem; /* 10px — Neon Auth lê var(--radius) */
+
+  /* === Shadcn sidebar (kit CRM: ground muted, ativo accent-soft + accent-text) === */
+  --sidebar: #F5F1E8;
+  --sidebar-foreground: #5C5448;
+  --sidebar-primary: #C99A2D;
+  --sidebar-primary-foreground: #FFFEFB;
+  --sidebar-accent: #F5EFE0;
+  --sidebar-accent-foreground: #8B6F2C;
+  --sidebar-border: #E8E0D0;
+  --sidebar-ring: #C99A2D;
 
   /* === Shadcn charts === */
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
+  --chart-1: #C99A2D;
+  --chart-2: #D8B760;
+  --chart-3: #4A6B8B;
+  --chart-4: #5C7A3A;
+  --chart-5: #B5462E;
 
-  /* === Brand / public site variables === */
-  --brand: #e9d73a;
-  --brand-hover: #d4c42f;
-  --brand-blue: #355e81;
-  --brand-blue-light: #a8b9c8;
-  --surface: #f7f7f7;
-  --cta-bg: #1a1a1a;
-  --cta-text: #ffffff;
-  --cta-muted: #a1a1a1;
-  --footer-bg: #0d0d0d;
-}
+  /* === Extensões Strutura === */
+  --surface: #FFFEFB;
+  --subtle: #F0EBDF;
+  --body: #5C5448;
+  --faint: #A89A7E;
+  --border-strong: #D8CDB5;
+  --accent-hover: #B58825;
+  --accent-soft: #F5EFE0;
+  --accent-soft-hover: #EFE6CD;
+  --accent-text: #8B6F2C; /* texto pequeno mostarda (WCAG AA) */
+  --accent-border: #E8DDB8;
 
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --success: #5C7A3A;
+  --success-soft: #EAF0DD;
+  --success-text: #3F5526;
+  --success-border: #D5DFC0;
 
-  /* Brand dark overrides */
-  --surface: #141414;
-  --cta-bg: #e9d73a;
-  --cta-text: #1a1a1a;
-  --cta-muted: #1a1a1a;
-  --footer-bg: #050505;
+  --danger: #B5462E;
+  --danger-soft: #F5E6DF;
+  --danger-text: #7A2F1E;
+  --danger-border: #E5CFC2;
+
+  --info: #4A6B8B;
+  --info-soft: #E5EBF2;
+  --info-text: #2F4760;
+  --info-border: #C8D4E0;
+
+  --warning: #C99A2D;
+  --warning-soft: #F5EFE0;
+  --warning-text: #8B6F2C;
+  --warning-border: #E8DDB8;
+
+  /* Tríades Big Five — SÓ landing de marketing
+     (relatórios/pipeline mantêm as cores de lib/descriptions.ts) */
+  --domain-n-soft: #F5E0DC;
+  --domain-n-text: #A03E2A;
+  --domain-e-soft: #F5EBDA;
+  --domain-e-text: #A0712A;
+  --domain-o-soft: #EDE5F2;
+  --domain-o-text: #5C3D7E;
+  --domain-a-soft: #E8F0E0;
+  --domain-a-text: #4A6B2C;
+  --domain-c-soft: #E0E8F0;
+  --domain-c-text: #3A5570;
 }
 
 @theme inline {
@@ -130,29 +132,84 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
 
-  /* Brand tokens (public site) */
-  --color-brand: var(--brand);
-  --color-brand-hover: var(--brand-hover);
-  --color-brand-blue: var(--brand-blue);
-  --color-brand-blue-light: var(--brand-blue-light);
+  /* Extensões Strutura → utilities (bg-accent-soft, text-accent-text, …) */
   --color-surface: var(--surface);
-  --color-cta-bg: var(--cta-bg);
-  --color-cta-text: var(--cta-text);
-  --color-cta-muted: var(--cta-muted);
-  --color-footer-bg: var(--footer-bg);
+  --color-subtle: var(--subtle);
+  --color-body: var(--body);
+  --color-faint: var(--faint);
+  --color-border-strong: var(--border-strong);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-soft-hover: var(--accent-soft-hover);
+  --color-accent-text: var(--accent-text);
+  --color-accent-border: var(--accent-border);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-success-text: var(--success-text);
+  --color-success-border: var(--success-border);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-danger-text: var(--danger-text);
+  --color-danger-border: var(--danger-border);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --color-info-text: var(--info-text);
+  --color-info-border: var(--info-border);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-warning-text: var(--warning-text);
+  --color-warning-border: var(--warning-border);
+  --color-domain-n-soft: var(--domain-n-soft);
+  --color-domain-n-text: var(--domain-n-text);
+  --color-domain-e-soft: var(--domain-e-soft);
+  --color-domain-e-text: var(--domain-e-text);
+  --color-domain-o-soft: var(--domain-o-soft);
+  --color-domain-o-text: var(--domain-o-text);
+  --color-domain-a-soft: var(--domain-a-soft);
+  --color-domain-a-text: var(--domain-a-text);
+  --color-domain-c-soft: var(--domain-c-soft);
+  --color-domain-c-text: var(--domain-c-text);
 
-  /* Fonts */
-  --font-sans: var(--font-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
+  /* Raios: botões/inputs (rounded-lg)=10px, cards (rounded-xl)=16px,
+     modais (rounded-2xl)=20px, pills (rounded-4xl) */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: var(--radius);
+  --radius-xl: 16px;
+  --radius-2xl: 20px;
+  --radius-3xl: 24px;
+  --radius-4xl: 9999px;
+
+  /* Fontes (vars definidas no <html> pelo next/font) */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-fraunces), "Iowan Old Style", Georgia, serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-heading: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+
+  /* Sombras warm — RGB 44/40/32, quase invisíveis */
+  --shadow-2xs: 0 1px 2px rgba(44, 40, 32, 0.04);
+  --shadow-xs: 0 1px 2px rgba(44, 40, 32, 0.04);
+  --shadow-sm: 0 1px 2px rgba(44, 40, 32, 0.04);
+  --shadow-md: 0 2px 8px rgba(44, 40, 32, 0.06);
+  --shadow-lg: 0 8px 24px rgba(44, 40, 32, 0.08);
+  --shadow-xl: 0 8px 24px rgba(44, 40, 32, 0.08);
+  --shadow-2xl: 0 16px 40px rgba(44, 40, 32, 0.10);
+}
+
+/* Display Fraunces — peso 500, NUNCA bold */
+@utility font-display {
+  font-family: var(--font-fraunces), "Iowan Old Style", Georgia, serif;
+  font-weight: 500;
+  font-variation-settings: "opsz" 144, "SOFT" 50;
+}
+
+/* Acento de headline: itálico mostarda (um por headline).
+   Nas páginas de mentora herda a cor primária dela via --primary. */
+@utility accent-italic {
+  font-style: italic;
+  color: var(--primary);
+  font-variation-settings: "opsz" 144, "SOFT" 100;
 }
 
 @layer base {
@@ -160,10 +217,33 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans;
   }
   html {
     @apply font-sans;
+  }
+  h1,
+  h2 {
+    @apply font-display text-foreground tracking-tight;
+  }
+  ::selection {
+    background: var(--accent-soft);
+    color: var(--accent-text);
+  }
+  ::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--border-strong);
+    border-radius: 9999px;
+    border: 3px solid var(--background);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--muted-foreground);
   }
 }
 
@@ -188,3 +268,193 @@
 .animate-slide-in-left { animation: slide-in-left 0.3s ease-out; }
 .animate-fade-in { animation: fade-in 0.4s ease-out; }
 .animate-spin-logo { animation: spin 1.2s ease-in-out infinite; }
+
+/* ============================================================
+   Tema "Quiet Luxury" — escopo: bigfive.valquiriaabreu.com
+   (data-mentora-theme="quiet-luxury" injetado em MentoraLayout)
+   Areia (#f0e6d2) + Azul da marca (#2f5878), Cormorant + Inter.
+   Espelha o design do site principal valquiriaabreu.com.
+   ============================================================ */
+
+[data-mentora-theme="quiet-luxury"] {
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  color: #102232;
+}
+
+/* Headlines em Cormorant Garamond — peso leve, sem auto-bold do base layer.
+   Inclui .font-display porque o app usa esse utility em CardTitle/divs decorativos. */
+[data-mentora-theme="quiet-luxury"] :is(h1, h2, h3, h4),
+[data-mentora-theme="quiet-luxury"] .font-display {
+  font-family: var(--font-cormorant), "Cormorant Garamond", "Iowan Old Style", Georgia, serif;
+  font-weight: 400;
+  font-variation-settings: normal;
+  letter-spacing: -0.01em;
+  color: #102232;
+}
+[data-mentora-theme="quiet-luxury"] :is(h1, h2) { font-weight: 300; }
+
+/* Override do utility accent-italic: vira ênfase azul-ardósia em itálico. */
+[data-mentora-theme="quiet-luxury"] .accent-italic {
+  color: #36505f;
+  font-variation-settings: normal;
+}
+
+/* Texto secundário/apagado padrão Tailwind quando dentro do tema. */
+[data-mentora-theme="quiet-luxury"] .text-muted-foreground {
+  color: #6b7886;
+}
+
+/* Atmosfera: glow azul radial no topo (quiet luxury, ~12% opacity, esvai pra transparente). */
+[data-mentora-theme="quiet-luxury"]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 1100px 600px at 50% -10%, rgba(47, 88, 120, 0.12), transparent 70%),
+    radial-gradient(ellipse 600px 400px at 100% 100%, rgba(47, 88, 120, 0.06), transparent 70%);
+  z-index: 0;
+}
+
+/* Grain areia — ruído fractal SVG, opacity baixa. */
+[data-mentora-theme="quiet-luxury"]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.025;
+  z-index: 0;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.06 0 0 0 0 0.13 0 0 0 0 0.2 0 0 0 0.7 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  background-size: 220px 220px;
+}
+
+/* Garante que o conteúdo fica acima dos overlays decorativos. */
+[data-mentora-theme="quiet-luxury"] > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Cards: branco-areia, borda azul sutil, sombra azulada quiet.
+   Respeita opt-outs explícitos (border-0/shadow-none/ring-0) — usados em cards "naked". */
+[data-mentora-theme="quiet-luxury"] [data-slot="card"]:not(.border-0):not(.shadow-none) {
+  background-color: #ffffff;
+  --tw-ring-color: rgba(47, 88, 120, 0.10);
+  box-shadow: 0 1px 2px rgba(16, 34, 50, 0.04),
+              0 10px 30px -18px rgba(47, 88, 120, 0.18);
+}
+[data-mentora-theme="quiet-luxury"] [data-slot="card"].shadow-none {
+  background-color: transparent;
+  box-shadow: none;
+  --tw-ring-shadow: 0 0 #0000;
+}
+
+/* Botões — pill (totalmente arredondados), transição suave. */
+[data-mentora-theme="quiet-luxury"] [data-slot="button"] {
+  border-radius: 9999px;
+  letter-spacing: 0.01em;
+  transition: background-color 300ms ease,
+              color 300ms ease,
+              border-color 300ms ease,
+              box-shadow 300ms ease,
+              transform 300ms ease;
+}
+
+/* Botão primário/CTA: azul da marca + sombra azulada + hover elevado. */
+[data-mentora-theme="quiet-luxury"] [data-slot="button"].bg-primary {
+  background-color: #2f5878;
+  color: #ffffff;
+  box-shadow: 0 10px 30px -12px rgba(47, 88, 120, 0.35);
+}
+[data-mentora-theme="quiet-luxury"] [data-slot="button"].bg-primary:hover:not(:disabled),
+[data-mentora-theme="quiet-luxury"] a[data-slot="button"].bg-primary:hover {
+  background-color: #3a678a;
+  transform: translateY(-2px) scale(1.015);
+  box-shadow: 0 18px 40px -12px rgba(47, 88, 120, 0.45);
+}
+[data-mentora-theme="quiet-luxury"] [data-slot="button"].bg-primary:hover:not(:disabled) svg {
+  transform: translateX(2px);
+  transition: transform 300ms ease;
+}
+
+/* Botão outline (escala não selecionada): areia clara + borda azul sutil + hover azul claro. */
+[data-mentora-theme="quiet-luxury"] [data-slot="button"].border-border {
+  background-color: rgba(255, 255, 255, 0.5);
+  border-color: rgba(47, 88, 120, 0.16);
+  color: #102232;
+}
+[data-mentora-theme="quiet-luxury"] [data-slot="button"].border-border:hover:not(:disabled) {
+  background-color: rgba(255, 255, 255, 0.85);
+  border-color: rgba(47, 88, 120, 0.30);
+  transform: translateY(-1px);
+}
+
+/* Botão ghost (ex.: "Anterior"): texto azul-ardósia, hover discreto. */
+[data-mentora-theme="quiet-luxury"] [data-slot="button"]:not(.bg-primary):not(.border-border) {
+  color: #36505f;
+}
+
+/* Inputs / Textarea — borda azul sutil, focus com outline visível e offset. */
+[data-mentora-theme="quiet-luxury"] :is([data-slot="input"], textarea, input[type="tel"]) {
+  border-color: rgba(47, 88, 120, 0.16);
+  background-color: rgba(255, 255, 255, 0.5);
+  color: #102232;
+  transition: border-color 200ms ease, box-shadow 200ms ease, background-color 200ms ease;
+}
+[data-mentora-theme="quiet-luxury"] :is([data-slot="input"], textarea, input[type="tel"])::placeholder {
+  color: #6b7886;
+}
+[data-mentora-theme="quiet-luxury"] :is([data-slot="input"], textarea, input[type="tel"]):focus-visible,
+[data-mentora-theme="quiet-luxury"] :is([data-slot="input"], textarea, input[type="tel"]):focus {
+  border-color: rgba(47, 88, 120, 0.50);
+  background-color: #ffffff;
+  outline: 2px solid rgba(47, 88, 120, 0.60);
+  outline-offset: 3px;
+  box-shadow: none;
+}
+
+/* Labels — Inter peso 500, cor texto apagado. */
+[data-mentora-theme="quiet-luxury"] [data-slot="label"] {
+  color: #36505f;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+/* PhoneInput wrapper (div.flex com border-input) — espelha a borda dos inputs. */
+[data-mentora-theme="quiet-luxury"] .focus-within\:border-ring {
+  border-color: rgba(47, 88, 120, 0.16);
+}
+
+/* Selects nativos (caso existam) — chevron azul-ardósia custom. */
+[data-mentora-theme="quiet-luxury"] select {
+  appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%236b7886' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 1rem;
+  padding-inline-end: 2.75rem;
+}
+
+/* Barra de progresso do questionário — azul da marca em vez do --primary cru. */
+[data-mentora-theme="quiet-luxury"] .bg-primary:not([data-slot="button"]) {
+  background-color: #2f5878;
+}
+
+/* Focus visible em qualquer elemento interativo — anel azul perceptível. */
+[data-mentora-theme="quiet-luxury"] :focus-visible {
+  outline: 2px solid rgba(47, 88, 120, 0.60);
+  outline-offset: 3px;
+  border-radius: inherit;
+}
+
+/* Reduced motion — neutraliza transformações de hover dos botões. */
+@media (prefers-reduced-motion: reduce) {
+  [data-mentora-theme="quiet-luxury"] [data-slot="button"],
+  [data-mentora-theme="quiet-luxury"] [data-slot="button"]:hover {
+    transform: none !important;
+    transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease;
+  }
+  [data-mentora-theme="quiet-luxury"] [data-slot="button"]:hover svg {
+    transform: none !important;
+  }
+}
+

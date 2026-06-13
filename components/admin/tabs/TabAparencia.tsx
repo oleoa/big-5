@@ -14,9 +14,9 @@ export function TabAparencia({ mentora }: Props) {
       <div>
         <h4 className="text-sm font-medium mb-3">Cores</h4>
         <div className="grid grid-cols-3 gap-4">
-          <ColorPicker id="cor_primaria" name="cor_primaria" label="Cor primária" defaultValue={mentora?.corPrimaria ?? '#6366f1'} />
-          <ColorPicker id="cor_fundo" name="cor_fundo" label="Cor de fundo" defaultValue={mentora?.corFundo ?? '#ffffff'} />
-          <ColorPicker id="cor_texto" name="cor_texto" label="Cor de texto" defaultValue={mentora?.corTexto ?? '#111827'} />
+          <ColorPicker id="cor_primaria" name="cor_primaria" label="Cor primária" defaultValue={mentora?.corPrimaria ?? '#C99A2D'} />
+          <ColorPicker id="cor_fundo" name="cor_fundo" label="Cor de fundo" defaultValue={mentora?.corFundo ?? '#FAF7F2'} />
+          <ColorPicker id="cor_texto" name="cor_texto" label="Cor de texto" defaultValue={mentora?.corTexto ?? '#2C2820'} />
         </div>
       </div>
 

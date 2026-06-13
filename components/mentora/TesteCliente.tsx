@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import { MentoraPublica } from "@/types/mentora";
 import items from "@/data/ipip-neo-120-items.json";
 import PhoneInput, { isValidPhone } from "@/components/mentora/PhoneInput";
@@ -103,7 +104,7 @@ export default function TesteCliente({ mentora, basePath }: { mentora: MentoraPu
                 className="h-32 mx-auto mb-2 object-contain"
               />
             )}
-            <CardTitle className="text-2xl font-semibold">
+            <CardTitle className="font-display text-2xl">
               Antes de começar
             </CardTitle>
             <CardDescription>
@@ -184,7 +185,8 @@ export default function TesteCliente({ mentora, basePath }: { mentora: MentoraPu
               onClick={iniciarTeste}
               className="w-full h-12 text-base mt-2"
             >
-              Iniciar teste →
+              Iniciar teste
+              <ArrowRight className="size-4" />
             </Button>
           </CardContent>
         </Card>
@@ -265,7 +267,8 @@ export default function TesteCliente({ mentora, basePath }: { mentora: MentoraPu
               variant="ghost"
               size="sm"
             >
-              ← Anterior
+              <ArrowLeft className="size-4" />
+              Anterior
             </Button>
           </div>
 

@@ -66,7 +66,7 @@ export default function ConfigPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Configurações</h1>
+        <h1 className="text-2xl">Configurações</h1>
         <p className="text-muted-foreground">Personalize a aparência e textos da sua página.</p>
       </div>
 
@@ -89,8 +89,8 @@ export default function ConfigPage() {
             <div className="space-y-2">
               <Label>Domínio personalizado</Label>
               <Input value={mentora.dominioCustom} disabled className="bg-muted" />
-              <p className="text-xs text-muted-foreground">
-                {mentora.dominioVerificado ? '✓ DNS verificado' : '⏳ Aguardando verificação DNS'}
+              <p className={`text-xs ${mentora.dominioVerificado ? 'text-success-text' : 'text-warning-text'}`}>
+                {mentora.dominioVerificado ? 'DNS verificado' : 'Aguardando verificação DNS'}
               </p>
             </div>
           )}

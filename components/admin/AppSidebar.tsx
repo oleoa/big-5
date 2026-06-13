@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { Users, LogOut } from 'lucide-react';
 import { logoutAction } from '@/app/admin/actions';
 import {
@@ -20,15 +21,30 @@ export function AppSidebar() {
   return (
     <Sidebar>
       <SidebarHeader className="px-4 py-4">
-        <a href="/admin" className="text-base font-semibold tracking-tight">
-          Strutura AI
+        <a href="/admin" className="flex items-center gap-3">
+          <Image
+            src="/strutura/mark.png"
+            alt=""
+            width={34}
+            height={34}
+            className="shrink-0"
+          />
+          <span className="flex min-w-0 flex-col">
+            <span className="truncate text-sm font-semibold text-foreground">
+              Strutura AI
+            </span>
+            <span className="text-xs text-muted-foreground">
+              Painel de administração
+            </span>
+          </span>
         </a>
-        <span className="text-xs text-muted-foreground">Painel de administração</span>
       </SidebarHeader>
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Gestão</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-[11px] font-semibold uppercase tracking-[0.06em] text-faint">
+            Gestão
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>

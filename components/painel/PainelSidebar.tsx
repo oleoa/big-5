@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { LayoutDashboard, Users, FileText, Settings, User } from 'lucide-react';
@@ -36,15 +37,30 @@ export function PainelSidebar({ mentoraNome }: { mentoraNome: string }) {
   return (
     <Sidebar>
       <SidebarHeader className="px-4 py-4">
-        <Link href="/painel" className="text-base font-semibold tracking-tight">
-          {mentoraNome}
+        <Link href="/painel" className="flex items-center gap-3">
+          <Image
+            src="/strutura/mark.png"
+            alt=""
+            width={34}
+            height={34}
+            className="shrink-0"
+          />
+          <span className="flex min-w-0 flex-col">
+            <span className="truncate text-sm font-semibold text-foreground">
+              {mentoraNome}
+            </span>
+            <span className="text-xs text-muted-foreground">
+              Painel da mentora
+            </span>
+          </span>
         </Link>
-        <span className="text-xs text-muted-foreground">Painel da mentora</span>
       </SidebarHeader>
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Menu</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-[11px] font-semibold uppercase tracking-[0.06em] text-faint">
+            Menu
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {navItems.map((item) => (

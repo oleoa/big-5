@@ -52,7 +52,7 @@ export default async function RelatorioPage({
       {resposta.status === 'processando' && (
         <Card>
           <CardContent className="p-8 text-center">
-            <div className="animate-spin-logo inline-block size-8 border-4 border-blue-500 border-r-transparent rounded-full mb-4" />
+            <div className="animate-spin-logo inline-block size-8 border-4 border-info border-r-transparent rounded-full mb-4" />
             <p className="text-muted-foreground">A gerar relatório com IA...</p>
             <p className="text-sm text-muted-foreground mt-1">Aguarde enquanto o relatório é gerado.</p>
           </CardContent>

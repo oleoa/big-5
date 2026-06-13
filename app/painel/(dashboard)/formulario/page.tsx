@@ -83,7 +83,7 @@ export default function FormularioPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Formulário</h1>
+        <h1 className="text-2xl">Formulário</h1>
         <p className="text-muted-foreground">Gerir os campos extras que os mentorados preenchem antes do teste.</p>
       </div>
 

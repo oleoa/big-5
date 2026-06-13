@@ -21,7 +21,7 @@ export default function PainelSignOutPage() {
   return (
     <div className="space-y-6 flex flex-col items-center justify-center">
       <div className="text-center">
-        <h1 className="text-2xl font-bold">A terminar sessão...</h1>
+        <h1 className="text-2xl">A terminar sessão...</h1>
       </div>
       <Loader2 className="animate-spin size-6" />
     </div>

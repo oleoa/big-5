@@ -11,10 +11,10 @@ import { ClickableRow } from '@/components/painel/ClickableRow';
 export const dynamic = 'force-dynamic';
 
 const STATUS_STYLES: Record<string, string> = {
-  pendente: 'bg-yellow-100 text-yellow-800',
-  processando: 'bg-blue-100 text-blue-800',
-  concluido: 'bg-green-100 text-green-800',
-  erro: 'bg-red-100 text-red-800',
+  pendente: 'bg-warning-soft text-warning-text border-warning-border',
+  processando: 'bg-info-soft text-info-text border-info-border',
+  concluido: 'bg-success-soft text-success-text border-success-border',
+  erro: 'bg-danger-soft text-danger-text border-danger-border',
 };
 
 const STATUS_LABELS: Record<string, string> = {
@@ -45,7 +45,7 @@ export default async function MentoradosPage({
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Mentorados</h1>
+        <h1 className="text-2xl">Mentorados</h1>
         <span className="text-sm text-muted-foreground">{total} resultado{total !== 1 ? 's' : ''}</span>
       </div>
 
@@ -72,10 +72,10 @@ export default async function MentoradosPage({
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b bg-muted/50">
-                    <th className="px-4 py-3 text-left font-medium">Nome</th>
-                    <th className="px-4 py-3 text-left font-medium">Email</th>
-                    <th className="px-4 py-3 text-left font-medium">Status</th>
-                    <th className="px-4 py-3 text-left font-medium">Data</th>
+                    <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">Nome</th>
+                    <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">Email</th>
+                    <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">Status</th>
+                    <th className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.06em] text-muted-foreground">Data</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -92,7 +92,7 @@ export default async function MentoradosPage({
                           {STATUS_LABELS[r.status] ?? r.status}
                         </Badge>
                       </td>
-                      <td className="px-4 py-3 text-muted-foreground">
+                      <td className="px-4 py-3 font-mono text-xs tabular-nums text-muted-foreground">
                         {r.criadoEm.toLocaleDateString('pt-PT')}
                       </td>
                     </ClickableRow>

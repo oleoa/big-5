@@ -63,7 +63,7 @@ export function MentorasTable({ mentoras: mentorasRaw, onEditar, onNova }: Props
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold tracking-tight">Mentoras</h1>
+        <h1 className="text-2xl">Mentoras</h1>
         <Button onClick={onNova}>Nova mentora</Button>
       </div>
 
@@ -108,7 +108,10 @@ export function MentorasTable({ mentoras: mentorasRaw, onEditar, onNova }: Props
                         </span>
                         {m.dominio_dns_registros?.length > 0 ? (
                           <div className="flex items-center gap-2">
-                            <Badge variant={m.dominio_verificado ? 'default' : 'secondary'} className="text-[10px]">
+                            <Badge
+                              variant="secondary"
+                              className={`text-[10px] ${m.dominio_verificado ? 'bg-success-soft text-success-text border-success-border' : 'bg-warning-soft text-warning-text border-warning-border'}`}
+                            >
                               {m.dominio_verificado ? 'Verificado' : 'Aguardando DNS'}
                             </Badge>
                             {!m.dominio_verificado && (
@@ -122,7 +125,7 @@ export function MentorasTable({ mentoras: mentorasRaw, onEditar, onNova }: Props
                             )}
                           </div>
                         ) : (
-                          <Badge variant="outline" className="text-[10px]">DNS pendente</Badge>
+                          <Badge variant="secondary" className="text-[10px] bg-warning-soft text-warning-text border-warning-border">DNS pendente</Badge>
                         )}
                       </div>
                     ) : (
@@ -130,7 +133,10 @@ export function MentorasTable({ mentoras: mentorasRaw, onEditar, onNova }: Props
                     )}
                   </TableCell>
                   <TableCell>
-                    <Badge variant={m.ativo ? 'default' : 'secondary'}>
+                    <Badge
+                      variant="secondary"
+                      className={m.ativo ? 'bg-success-soft text-success-text border-success-border' : ''}
+                    >
                       {m.ativo ? 'Ativo' : 'Inativo'}
                     </Badge>
                   </TableCell>

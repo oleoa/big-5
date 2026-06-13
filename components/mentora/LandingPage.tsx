@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import { MentoraPublica } from "@/types/mentora";
 import MentoraLayout from "./MentoraLayout";
 import { Card, CardContent } from "@/components/ui/card";
@@ -28,7 +29,7 @@ export default function LandingPage({
             />
           )}
 
-          <h1 className="text-3xl font-bold tracking-tight mb-4">
+          <h1 className="text-3xl tracking-tight mb-4">
             {mentora.titulo}
           </h1>
 
@@ -52,7 +53,10 @@ export default function LandingPage({
             {loading ? (
               <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent" />
             ) : (
-              <>{mentora.textoBotao} →</>
+              <>
+                {mentora.textoBotao}
+                <ArrowRight className="size-4" />
+              </>
             )}
           </Button>
         </CardContent>
